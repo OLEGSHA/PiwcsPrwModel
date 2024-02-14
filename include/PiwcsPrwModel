@@ -1,0 +1,263 @@
+#ifndef PIWCS_PRW_MODEL
+#define PIWCS_PRW_MODEL
+
+#include <iosfwd>
+#include <memory>
+#include <string>
+#include <unordered_map>
+
+namespace piwcs {
+namespace prw {
+
+constexpr size_t IDENT_LENGTH = 15;
+using Identifier = std::string;
+
+extern const Identifier ID_NULL;
+extern const Identifier ID_INVALID;
+
+bool isIdOrNull(const Identifier &);
+bool isId(const Identifier &);
+
+class Node;
+class Section;
+class Destination;
+
+/**
+ * Model of the Public Railway (PRW) found on PIWCS.
+ *
+ * The model is fundamentally a directed graph, with switches and section
+ * boundaries acting as nodes, and railway track sections acting as edges.
+ *
+ * ## Class-enforced invariants
+ *   - All `unique_ptr`'s are not empty
+ *   - Node identifiers are globally unique
+ *   - Section identifiers are globally unique
+ *   - All identifier slots are either empty or contain IDs of known entities
+ *   - Nodes and section connection information is not contradictory
+ *   - All Destination objects are valid
+ *   - Destination addresses are globally unique
+ */
+class Model {
+
+    std::unordered_map<Identifier, std::unique_ptr<Node>> m_nodes;
+    std::unordered_map<Identifier, std::unique_ptr<Section>> m_sections;
+
+  public:
+    const std::unordered_map<Identifier, std::unique_ptr<Node>> &nodes() const {
+        return m_nodes;
+    }
+
+    const std::unordered_map<Identifier, std::unique_ptr<Section>> &
+    sections() const {
+        return m_sections;
+    }
+
+    enum AddResult { ADD_OK, ADD_DUPLICATE, ADD_HAS_REF };
+
+    /**
+     * Adds an existing Node to the model.
+     *
+     * The operation may fail if the node with given ID already exists
+     * (`ADD_DUPLICATE`), or if the node references any entities
+     * (`ADD_HAS_REF`). Should addition fail, all objects remain valid and
+     * no change is made.
+     *
+     * The `unique_ptr` must not be reset.
+     *
+     * @param node the Node to add.
+     *
+     * @return `ADD_OK` upon success, `ADD_DUPLICATE` or `ADD_UNKNOWN_REF` upon
+     * failure.
+     */
+    AddResult addNode(std::unique_ptr<Node> node);
+
+    enum RemoveResult { REMOVE_OK, REMOVE_NOT_FOUND, REMOVE_REFERENCED };
+
+    /**
+     * Removes a Node from the model.
+     *
+     * The operation may fail if the node with given ID cannot be found
+     * (`REMOVE_NOT_FOUND`), or if the node is still referenced by some entity
+     * (`REMOVE_REFERENCED`). Should removal fail, all objects remain valid and
+     * no change is made.
+     *
+     * @param id the ID of the Node to remove.
+     *
+     * @return `REMOVE_OK` upon success, `REMOVE_NOT_FOUND` or
+     * `REMOVE_REFERENCED` upon failure.
+     */
+    RemoveResult removeNode(const Identifier &id);
+
+    const Node *node(const Identifier &id);
+
+    const Section *section(const Identifier &id);
+};
+
+/**
+ * A Node at the joint or intersection of Sections.
+ *
+ * Nodes, as all Model entities, are mutable objects.
+ */
+class Node {
+
+  public:
+    enum Type {
+        /**
+         * A node connecting two sections of a single track.
+         */
+        THRU = 1,
+
+        /**
+         * A motorized switch operated by a routing table.
+         */
+        MOTORIZED = 2,
+
+        /**
+         * A switch that cannot be entered from the common track.
+         */
+        PASSIVE = 3,
+
+        /**
+         * A switch that is fixed in a single position that can be entered from
+         * the common track.
+         */
+        FIXED = 4,
+
+        // /**
+        //  * A level crossing of two tracks.
+        //  */
+        // CROSSING = 5,
+
+        // /**
+        //  * A dead end connected to a bidirectional section.
+        //  */
+        // END = 6,
+    };
+
+  private:
+    Type m_type;
+    Identifier m_id;
+
+  public:
+    Node(Type type, const Identifier &id) : m_type(type), m_id(id) {}
+    virtual ~Node() {}
+
+    Type type() const { return m_type; }
+
+    const Identifier &id() const { return m_id; }
+
+    virtual size_t sectionCount() const = 0;
+    virtual const Identifier &section(size_t index) const = 0;
+
+  protected:
+    virtual bool couldTraverse(size_t from, size_t to) const = 0;
+    virtual void print(std::ostream &) const = 0;
+
+    friend std::ostream &operator<<(std::ostream &, const Node &);
+};
+
+class ThruNode : public Node {
+
+    Identifier m_sections[2];
+
+  public:
+    ThruNode(const Identifier &);
+
+    virtual size_t sectionCount() const override;
+    virtual const Identifier &section(size_t index) const override;
+
+  protected:
+    virtual bool couldTraverse(size_t from, size_t to) const override;
+    virtual void print(std::ostream &) const override;
+};
+
+class SwitchNode : public Node {
+
+    Identifier m_common;
+    Identifier m_straight;
+    Identifier m_diverging;
+
+  public:
+    SwitchNode(Type, const Identifier &);
+
+    const Identifier &common() const { return m_common; }
+
+    const Identifier &straight() const { return m_straight; }
+
+    const Identifier &diverging() const { return m_diverging; }
+
+    virtual size_t sectionCount() const override;
+    virtual const Identifier &section(size_t index) const override;
+
+  protected:
+    virtual bool couldTraverse(size_t from, size_t to) const override;
+    virtual void print(std::ostream &) const override;
+};
+
+/**
+ * A Section connecting exactly two Nodes.
+ *
+ * Sections, as all Model entities, are mutable objects.
+ */
+class Section {
+
+    Identifier m_id;
+
+    Identifier m_start;
+    Identifier m_end;
+    bool m_bidirectional;
+
+    std::unique_ptr<Destination> m_dest;
+
+  public:
+    Section(const Identifier &id);
+
+    const Identifier &id() const { return m_id; }
+
+    const Identifier &start() const { return m_start; }
+
+    const Identifier &end() const { return m_end; }
+
+    bool isBidir() const { return m_bidirectional; }
+
+    const Identifier &node(size_t index) const {
+        switch (index) {
+        case 0:
+            return start();
+        case 1:
+            return end();
+        default:
+            return ID_INVALID;
+        }
+    }
+
+    bool canTraverse(size_t from, size_t to) const {
+        if (from == 0 && to == 1)
+            return true;
+        if (isBidir() && from == 1 && to == 0)
+            return true;
+        return false;
+    }
+
+    bool isDestination() const { return static_cast<bool>(m_dest); }
+
+    const Destination *destination() const { return m_dest.get(); }
+
+    void setDestination(std::unique_ptr<Destination>);
+
+    friend std::ostream &operator<<(std::ostream &, const Section &);
+};
+
+struct Destination {
+
+    using Address = std::string;
+    using Name = std::string;
+
+    Address address;
+    Name name;
+};
+
+} // namespace prw
+} // namespace piwcs
+
+#endif // PIWCS_PRW_MODEL

@@ -1,0 +1,5 @@
+# Default build directory
+/build
+
+# Custom scripts
+/.my_*
