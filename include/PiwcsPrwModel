@@ -6,6 +6,13 @@
 #include <string>
 #include <unordered_map>
 
+/**
+ * @file
+ *
+ * This header declares the Model describing the PIWCS Public Railway, I/O
+ * routines and a few convenience algorithms.
+ */
+
 namespace piwcs {
 namespace prw {
 
@@ -60,7 +67,7 @@ class Destination;
  * The model is fundamentally a directed graph, with switches and section
  * boundaries acting as nodes, and railway track sections acting as edges.
  *
- * ## Class-enforced invariants
+ * @par Class-enforced invariants
  *   - All `unique_ptr`'s are not empty
  *   - Node identifiers are globally unique
  *   - Section identifiers are globally unique
@@ -83,7 +90,7 @@ class Model {
      * its contents update dynamically as this Model object changes. All
      * `unique_ptr`'s are not empty.
      *
-     * @return a mapping of IDs to Nodes.
+     * @return a mapping of IDs to Nodes
      */
     const std::unordered_map<Identifier, std::unique_ptr<Node>> &nodes() const {
         return m_nodes;
@@ -96,7 +103,7 @@ class Model {
      * its contents update dynamically as this Model object changes. All
      * `unique_ptr`'s are not empty.
      *
-     * @return a mapping of IDs to Sections.
+     * @return a mapping of IDs to Sections
      */
     const std::unordered_map<Identifier, std::unique_ptr<Section>> &
     sections() const {
@@ -133,12 +140,12 @@ class Model {
      * (`ADD_HAS_REF`). Should addition fail, all objects remain valid and
      * no change is made.
      *
-     * The `unique_ptr` must not be reset.
+     * The `unique_ptr` must not be empty.
      *
-     * @param node the Node to add.
+     * @param node the Node to add
      *
      * @return `ADD_OK` upon success, `ADD_DUPLICATE` or `ADD_UNKNOWN_REF` upon
-     * failure.
+     * failure
      */
     AddResult addNode(std::unique_ptr<Node> node);
 
@@ -171,10 +178,10 @@ class Model {
      * (`REMOVE_REFERENCED`). Should removal fail, all objects remain valid and
      * no change is made.
      *
-     * @param id the ID of the Node to remove.
+     * @param id the ID of the Node to remove
      *
      * @return `REMOVE_OK` upon success, `REMOVE_NOT_FOUND` or
-     * `REMOVE_REFERENCED` upon failure.
+     * `REMOVE_REFERENCED` upon failure
      */
     RemoveResult removeNode(const Identifier &id);
 
@@ -186,7 +193,7 @@ class Model {
      *
      * @param id the ID of the Node to find
      *
-     * @return a raw pointer to the Node, or `nullptr` if none found.
+     * @return a raw pointer to the Node, or `nullptr` if none found
      */
     const Node *node(const Identifier &id);
 
@@ -198,7 +205,7 @@ class Model {
      *
      * @param id the ID of the Section to find
      *
-     * @return a raw pointer to the Section, or `nullptr` if none found.
+     * @return a raw pointer to the Section, or `nullptr` if none found
      */
     const Section *section(const Identifier &id);
 };
@@ -271,14 +278,14 @@ class Node {
      * be implemented by a single class. Use this value to differentiate between
      * different kinds of nodes.
      *
-     * @return the Type of this Node.
+     * @return the Type of this Node
      */
     Type type() const { return m_type; }
 
     /**
      * Returns the Identifier of this Node.
      *
-     * @return the ID of this Node.
+     * @return the ID of this Node
      */
     const Identifier &id() const { return m_id; }
 
@@ -295,7 +302,7 @@ class Node {
      * Returns the ID of the section in the requested slot, `ID_NULL` if the
      * slot is not yet connected, or `ID_INVALID` if no such slot exists.
      *
-     * @return the ID of the requested section, `ID_NULL` or `ID_INVALID`.
+     * @return the ID of the requested section, `ID_NULL` or `ID_INVALID`
      */
     virtual const Identifier &section(size_t index) const = 0;
 
@@ -328,11 +335,19 @@ class Node {
     friend std::ostream &operator<<(std::ostream &, const Node &);
 };
 
+/**
+ * A node connecting two sections of a single track. Its Type is `ThruNode`.
+ *
+ * Use `section(0)` and `section(1)` to access connections.
+ */
 class ThruNode : public Node {
 
     Identifier m_sections[2];
 
   public:
+    /**
+     * Constructs a new thru node with the given ID.
+     */
     ThruNode(const Identifier &);
 
     virtual size_t sectionCount() const override;
@@ -343,6 +358,43 @@ class ThruNode : public Node {
     virtual void print(std::ostream &) const override;
 };
 
+/**
+ * A switch with three connected tracks. Switches can have one of three Types:
+ * `MOTORIZED`, `PASSIVE` or `FIXED`.
+ *
+ * @par Switch structure
+ *
+    @dot
+    graph switch {
+        node [shape = plaintext];
+        common [layer = 0];
+        straight [layer = 2];
+        diverging [layer = 2];
+        switch [layer = 1];
+        common -- switch -- straight;
+        switch -- diverging [style = "dashed"];
+    }
+    @enddot
+ *
+ * Switches physically prohibit travel between straight and diverging tracks.
+ * When a train enters the switch from its straight or diverging track, it is
+ * directed into the common track. When a train enters the switch from its
+ * common track, the switch chooses a track to direct it towards.
+ *
+ * Straight track is the track taken by trains when no controller is present.
+ *
+ * `MOTORIZED` switches can only be entered from the common track. A routing
+ * table consulted to determine whether the train should be diverted.
+ *
+ * `PASSIVE` switches can only be exited from the common track. As such, they
+ * require no controller.
+ *
+ * `FIXED` switches can be entered from the common track, but will always direct
+ * all trains to the same exit. They are usually found at the edges of
+ * bidirectional segments.
+ *
+ * (All other switch configurations are invalid on the PRW.)
+ */
 class SwitchNode : public Node {
 
     Identifier m_common;
@@ -350,15 +402,54 @@ class SwitchNode : public Node {
     Identifier m_diverging;
 
   public:
+    /**
+     * Constructs a SwitchNode with the given type and ID.
+     *
+     * Type must be one of `MOTORIZED`, `PASSIVE` and `FIXED`.
+     */
     SwitchNode(Type, const Identifier &);
 
+    /**
+     * Returns the section ID of the common track.
+     *
+     * Equivalent to `section(0)`.
+     *
+     * @return section ID of the common track or `ID_NULL`
+     */
     const Identifier &common() const { return m_common; }
 
+    /**
+     * Returns the section ID of the straight track.
+     *
+     * Equivalent to `section(1)`.
+     *
+     * @return section ID of the straight track or `ID_NULL`
+     */
     const Identifier &straight() const { return m_straight; }
 
+    /**
+     * Returns the section ID of the diverging track.
+     *
+     * Equivalent to `section(2)`.
+     *
+     * @return section ID of the diverging track or `ID_NULL`
+     */
     const Identifier &diverging() const { return m_diverging; }
 
     virtual size_t sectionCount() const override;
+
+    /**
+     * @copydoc Node::section
+     *
+     * @par Layout of switches
+     *   - 0: common track
+     *   - 1: straight track
+     *   - 2: diverging track
+     *
+     * @see common
+     * @see straight
+     * @see diverging
+     */
     virtual const Identifier &section(size_t index) const override;
 
   protected:
@@ -368,6 +459,12 @@ class SwitchNode : public Node {
 
 /**
  * A Section connecting exactly two Nodes.
+ *
+ * Sections usually allow travel in one direction only, from start to end.
+ * If not, the Section is said to be bidirectional, in which case start and end
+ * are chosen arbitrarily.
+ *
+ * Some Sections are destinations and own a Destination object.
  *
  * Sections, as all Model entities, are mutable objects.
  */
@@ -382,16 +479,56 @@ class Section {
     std::unique_ptr<Destination> m_dest;
 
   public:
+    /**
+     * Constructs a new Section with the given ID.
+     */
     Section(const Identifier &id);
 
+    /**
+     * Returns the Identifier of this Section.
+     *
+     * @return the ID of this section
+     */
     const Identifier &id() const { return m_id; }
 
+    /**
+     * Returns the ID of the Node at the start of this Section.
+     *
+     * Equivalent to `node(0)`.
+     *
+     * @return the ID of the start Node or `ID_NULL`
+     */
     const Identifier &start() const { return m_start; }
 
+    /**
+     * Returns the ID of the Node at the end of this Section.
+     *
+     * Equivalent to `node(1)`.
+     *
+     * @return the ID of the end Node or `ID_NULL`
+     */
     const Identifier &end() const { return m_end; }
 
+    /**
+     * Returns `true` iff the Section is bidirectional, i.e. allows travel from
+     * end to start.
+     *
+     * @return whether this Section is bidirectional
+     */
     bool isBidir() const { return m_bidirectional; }
 
+    /**
+     * Returns the ID of the node at the given index. This is a convenience
+     * method to generalize `start()` and `end()`.
+     *
+     * Index 0 corresponds to `start`, index 1 corresponds to `end`. All other
+     * indices return `ID_INVALID`.
+     *
+     * @param index index of the Node slot to return
+     *
+     * @return the ID of the Node in the slot with index `index`, `ID_NULL` if
+     * the slot is empty, or `ID_INVALID` if the slot does not exist
+     */
     const Identifier &node(size_t index) const {
         switch (index) {
         case 0:
@@ -403,6 +540,22 @@ class Section {
         }
     }
 
+    /**
+     * Checks whether travel is allowed from Node in slot with index `from` to
+     * Node in slot with index `to`.
+     *
+     * See @ref Section::node for layout.
+     *
+     * Travel is always allowed from 0 to 1. If this Section is bidirectional,
+     * travel is additionally allowed from 1 to 0. All other inputs return
+     * `false`.
+     *
+     * @param from index of starting Node
+     * @param to index of ending Node
+     *
+     * @return `true` if and only if travel is possible and allowed in given
+     * direction
+     */
     bool canTraverse(size_t from, size_t to) const {
         if (from == 0 && to == 1)
             return true;
@@ -411,21 +564,81 @@ class Section {
         return false;
     }
 
+    /**
+     * Returns `true` iff this Section has Destination data.
+     *
+     * @return whether this Section is a destination
+     */
     bool isDestination() const { return static_cast<bool>(m_dest); }
 
+    /**
+     * Returns the Destination data for this Section, if any.
+     *
+     * The returned pointer is valid until `setDestination` is called on this
+     * Section object or this Section object is destroyed.
+     *
+     * @return a raw pointer to the Destination object describing this
+     * destination, or `nullptr`
+     */
     const Destination *destination() const { return m_dest.get(); }
 
-    void setDestination(std::unique_ptr<Destination>);
+    /**
+     * Changes the destination data of this Section.
+     *
+     * If `data` is not empty, this Section becomes a destination described by
+     * the provided object which becomes owned by this Section. Any previous
+     * destination data is discarded and Destination objects deleted.
+     *
+     * If `data` is empty, this Section ceases to be destination if it was one.
+     * Any previous destination data is discarded and Destination objects
+     * deleted.
+     *
+     * @param data new destination data or `nullptr`
+     */
+    void setDestination(std::unique_ptr<Destination> data);
 
+    /**
+     * Outputs a textual representation of this Section to the `ostream`.
+     */
     friend std::ostream &operator<<(std::ostream &, const Section &);
 };
 
+/**
+ * A description of a destination.
+ *
+ * These objects may be attached to Sections to turn them into destinations.
+ *
+ * Destinations, as all Model entities, are mutable objects.
+ */
 struct Destination {
 
+    /**
+     * Type alias for addresses. Effectively a string.
+     */
     using Address = std::string;
+
+    /**
+     * Type alias for names. Effectively a string.
+     */
     using Name = std::string;
 
+    /**
+     * The address of this Destination.
+     *
+     * An address is a machine-friendly identifier of a destination. They are
+     * used for routing.
+     *
+     * Addresses must be ASCII-encoded strings.
+     */
     Address address;
+
+    /**
+     * The name of this Destination.
+     *
+     * A name is a user-friendly label for the destination.
+     *
+     * Names must not be inspected and may use any encoding.
+     */
     Name name;
 };
 
