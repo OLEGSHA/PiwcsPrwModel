@@ -4,6 +4,18 @@
 
 using namespace piwcs::prw;
 
+TEST(Identifiers, Validators) {
+    EXPECT_TRUE(isId("123"));
+    EXPECT_TRUE(isId("1"));
+    EXPECT_TRUE(isId(Identifier(IDENT_LENGTH, '1')));
+
+    EXPECT_FALSE(isId(ID_NULL));
+    EXPECT_FALSE(isId(""));
+    EXPECT_TRUE(isIdOrNull(ID_NULL));
+
+    EXPECT_FALSE(isId(ID_INVALID));
+}
+
 /**
  * A Node that has non-null connections.
  */

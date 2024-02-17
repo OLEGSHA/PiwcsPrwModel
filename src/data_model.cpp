@@ -4,9 +4,9 @@
 
 namespace piwcs::prw {
 
-bool isId(const Identifier &id) { return id[0] != '\0' && id[0] != '#'; }
+bool isId(const Identifier &id) { return !id.empty() && id[0] != '#'; }
 
-bool isIdOrNull(const Identifier &id) { return id[0] == '\0' || isId(id); }
+bool isIdOrNull(const Identifier &id) { return id.empty() || isId(id); }
 
 Model::AddResult Model::addNode(std::unique_ptr<Node> node) {
 
