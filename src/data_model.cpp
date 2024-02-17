@@ -4,9 +4,6 @@
 
 namespace piwcs::prw {
 
-const Identifier ID_NULL = ""; // NOLINT readability-redundant-string-init
-const Identifier ID_INVALID = "# INVALID";
-
 bool isId(const Identifier &id) { return id[0] != '\0' && id[0] != '#'; }
 
 bool isIdOrNull(const Identifier &id) { return id[0] == '\0' || isId(id); }

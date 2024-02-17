@@ -1,4 +1,4 @@
-#HeaderFilterRegex: "include/.*|src/.*|printer/.*|test/.*"
+HeaderFilterRegex: "include/.*|src/.*|printer/.*|test/.*"
 
 Checks: "-*,\
   clang-analyzer-*,\
@@ -62,3 +62,9 @@ Checks: "-*,\
 
 # readability-suspicious-call-argument
 #   ignore reason: trips up on geometry code (y no NOLINTBEGIN, Debian?)
+
+CheckOptions:
+# Change reason: highlighted as acceptable (and, in maintainer's opinion,
+# reasonable) by C++ Core Guidelines C.21
+  - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value:           'true'
