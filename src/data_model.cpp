@@ -84,7 +84,9 @@ void ThruNode::print(std::ostream &out) const {
     out << id() << " [THRU; " << section(0) << ", " << section(1) << "]";
 }
 
-SwitchNode::SwitchNode(Type type, const Identifier &id) : Node(type, id) {
+SwitchNode::SwitchNode(Type type, Identifier id)
+    : Node(type, std::move(id)), m_common(ID_NULL), m_straight(ID_NULL),
+      m_diverging(ID_NULL) {
 #ifdef DEBUG
     switch (type) {
     case Node::MOTORIZED:
@@ -142,6 +144,14 @@ void SwitchNode::print(std::ostream &out) const {
 
     out << "C/S/D: " << common() << ", " << straight() << ", " << diverging()
         << "]";
+}
+
+Section::Section(Identifier id, bool isBidir)
+    : m_id(std::move(id)), m_start(ID_NULL), m_end(ID_NULL),
+      m_bidirectional(isBidir) {}
+
+void Section::setDestination(std::unique_ptr<Destination> data) {
+    m_dest = std::move(data);
 }
 
 } // namespace piwcs::prw

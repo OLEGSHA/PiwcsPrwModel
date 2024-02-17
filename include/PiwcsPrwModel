@@ -405,7 +405,7 @@ class SwitchNode : public Node {
      *
      * Type must be one of `MOTORIZED`, `PASSIVE` and `FIXED`.
      */
-    SwitchNode(Type, const Identifier &);
+    SwitchNode(Type, Identifier);
 
     /**
      * Returns the section ID of the common track.
@@ -479,9 +479,9 @@ class Section {
 
   public:
     /**
-     * Constructs a new Section with the given ID.
+     * Constructs a new Section with the given ID and directionality
      */
-    Section(const Identifier &id);
+    Section(Identifier, bool isBidir);
 
     /**
      * Returns the Identifier of this Section.

@@ -6,6 +6,7 @@ if(GTest_FOUND)
     add_executable(tests
         model.cpp
         nodes.cpp
+        section.cpp
     )
 
     target_link_libraries(tests piwcsprwmodel)
