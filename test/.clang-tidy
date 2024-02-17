@@ -1,0 +1,6 @@
+Checks: "-cppcoreguidelines-avoid-non-const-global-variables,\
+  -cppcoreguidelines-owning-memory"
+
+# cppcoreguidelines-avoid-non-const-global-variables
+# cppcoreguidelines-owning-memory
+#   ignore reason: triggered by GTest macros

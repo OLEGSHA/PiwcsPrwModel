@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.20)
 
 project(piwcsprwmodel VERSION 0.1 LANGUAGES CXX)
 
@@ -24,4 +24,5 @@ if (DOXYGEN_FOUND)
 endif()
 
 add_subdirectory(src)
+add_subdirectory(test)
 add_subdirectory(printer)

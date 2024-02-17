@@ -1,3 +1,5 @@
+#HeaderFilterRegex: "include/.*|src/.*|printer/.*|test/.*"
+
 Checks: "-*,\
   clang-analyzer-*,\
   cppcoreguidelines-*,\
