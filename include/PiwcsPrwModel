@@ -302,7 +302,6 @@ class Node {
      */
     [[nodiscard]] virtual const Identifier &section(size_t index) const = 0;
 
-  protected:
     /**
      * Determines whether travel from slot `from` to slot `to` would be possible
      * if appropriate section were connected in these slots.
@@ -319,6 +318,7 @@ class Node {
      */
     [[nodiscard]] virtual bool couldTraverse(size_t from, size_t to) const = 0;
 
+  protected:
     /**
      * Outputs a textual representation of this Node to the `ostream`.
      */
@@ -345,13 +345,13 @@ class ThruNode : public Node {
      */
     ThruNode(const Identifier &);
 
-    [[nodiscard]] size_t sectionCount() const override;
+    [[nodiscard]] size_t sectionCount() const override { return 2; }
 
     [[nodiscard]] const Identifier &section(size_t index) const override;
 
-  protected:
     [[nodiscard]] bool couldTraverse(size_t from, size_t to) const override;
 
+  protected:
     void print(std::ostream &) const override;
 };
 
@@ -376,19 +376,20 @@ class ThruNode : public Node {
  * Switches physically prohibit travel between straight and diverging tracks.
  * When a train enters the switch from its straight or diverging track, it is
  * directed into the common track. When a train enters the switch from its
- * common track, the switch chooses a track to direct it towards.
- *
- * Straight track is the track taken by trains when no controller is present.
+ * common track, the switch chooses a track to direct it towards..
  *
  * `MOTORIZED` switches can only be entered from the common track. A routing
- * table consulted to determine whether the train should be diverted.
+ * table consulted to determine whether the train should be diverted. For
+ * motorized switches, straight track is the default direction.
  *
  * `PASSIVE` switches can only be exited from the common track. As such, they
- * require no controller.
+ * require no controller. For passive switches, straight track choice is
+ * arbitrary.
  *
  * `FIXED` switches can be entered from the common track, but will always direct
  * all trains to the same exit. They are usually found at the edges of
- * bidirectional segments.
+ * bidirectional segments. For fixed switches, straight track is the exit for
+ * trains entering through common track.
  *
  * (All other switch configurations are invalid on the PRW.)
  */
@@ -433,7 +434,7 @@ class SwitchNode : public Node {
      */
     [[nodiscard]] const Identifier &diverging() const { return m_diverging; }
 
-    [[nodiscard]] size_t sectionCount() const override;
+    [[nodiscard]] size_t sectionCount() const override { return 3; }
 
     /**
      * @copydoc Node::section
@@ -449,9 +450,9 @@ class SwitchNode : public Node {
      */
     [[nodiscard]] const Identifier &section(size_t index) const override;
 
-  protected:
     [[nodiscard]] bool couldTraverse(size_t from, size_t to) const override;
 
+  protected:
     void print(std::ostream &) const override;
 };
 

@@ -2,6 +2,10 @@
 
 #include <iostream>
 
+#ifdef DEBUG
+#include <stdexcept>
+#endif
+
 namespace piwcs::prw {
 
 bool isId(const Identifier &id) { return !id.empty() && id[0] != '#'; }
@@ -65,8 +69,6 @@ ThruNode::ThruNode(const Identifier &id) : Node(THRU, id) {
     m_sections[1] = ID_NULL;
 }
 
-size_t ThruNode::sectionCount() const { return 2; }
-
 const Identifier &ThruNode::section(size_t index) const {
     if (index > 2) {
         return ID_INVALID;
@@ -80,6 +82,66 @@ bool ThruNode::couldTraverse(size_t from, size_t to) const {
 
 void ThruNode::print(std::ostream &out) const {
     out << id() << " [THRU; " << section(0) << ", " << section(1) << "]";
+}
+
+SwitchNode::SwitchNode(Type type, const Identifier &id) : Node(type, id) {
+#ifdef DEBUG
+    switch (type) {
+    case Node::MOTORIZED:
+    case Node::PASSIVE:
+    case Node::FIXED:
+        break;
+    default:
+        throw std::invalid_argument("Illegal SwitchNode type");
+    }
+#endif
+}
+
+const Identifier &SwitchNode::section(size_t index) const {
+    switch (index) {
+    case 0:
+        return m_common;
+    case 1:
+        return m_straight;
+    case 2:
+        return m_diverging;
+    default:
+        return ID_INVALID;
+    }
+}
+
+bool SwitchNode::couldTraverse(size_t from, size_t to) const {
+    if (from == to || from > 2 || to > 2) {
+        return false;
+    }
+
+    switch (type()) {
+    case Node::MOTORIZED:
+        return to == 0;
+    case Node::PASSIVE:
+        return from == 0;
+    default:
+        return to == 0 || (from == 0 && to == 1);
+    }
+}
+
+void SwitchNode::print(std::ostream &out) const {
+    out << id();
+
+    switch (type()) {
+    case Node::MOTORIZED:
+        out << " [MOTORIZED; ";
+        break;
+    case Node::PASSIVE:
+        out << " [PASSIVE; ";
+        break;
+    default:
+        out << " [PASSIVE; ";
+        break;
+    }
+
+    out << "C/S/D: " << common() << ", " << straight() << ", " << diverging()
+        << "]";
 }
 
 } // namespace piwcs::prw

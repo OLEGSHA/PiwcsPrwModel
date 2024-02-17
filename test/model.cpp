@@ -39,14 +39,14 @@ class ConnectedNode : public Node {
     void print(std::ostream &s) const { s << "Test ConnectedNode " << id(); }
 };
 
-TEST(DataModel, Constructor) {
+TEST(Model, Constructor) {
     Model model;
 
     EXPECT_TRUE(model.nodes().empty());
     EXPECT_TRUE(model.sections().empty());
 }
 
-TEST(DataModel, AddNode) {
+TEST(Model, AddNode) {
     Model model;
 
     auto res = model.addNode(std::make_unique<ThruNode>("123"));
@@ -68,7 +68,7 @@ TEST(DataModel, AddNode) {
     EXPECT_EQ(model.nodes().size(), 2);
 }
 
-TEST(DataModel, FindNode) {
+TEST(Model, FindNode) {
     Model model;
 
     model.addNode(std::make_unique<ThruNode>("123"));
@@ -82,7 +82,7 @@ TEST(DataModel, FindNode) {
     EXPECT_EQ(node, nullptr);
 }
 
-TEST(DataModel, RemoveNode) {
+TEST(Model, RemoveNode) {
     Model model;
 
     model.addNode(std::make_unique<ThruNode>("123"));

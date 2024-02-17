@@ -4,7 +4,8 @@ if(GTest_FOUND)
     enable_testing()
 
     add_executable(tests
-        data_model.cpp
+        model.cpp
+        nodes.cpp
     )
 
     target_link_libraries(tests piwcsprwmodel)
