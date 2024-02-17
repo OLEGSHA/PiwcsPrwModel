@@ -36,7 +36,7 @@ static const Identifier ID_NULL;
  * This is not the only possible invalid identifier; use `isId` to check for
  * validity.
  */
-static const Identifier ID_INVALID = "# Invalid";
+static const Identifier ID_INVALID = "#invalid";
 
 /**
  * Determines if the provided Identifier is valid.

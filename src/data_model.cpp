@@ -80,10 +80,6 @@ bool ThruNode::couldTraverse(size_t from, size_t to) const {
     return (from == 0 && to == 1) || (from == 1 && to == 0);
 }
 
-void ThruNode::print(std::ostream &out) const {
-    out << id() << " [THRU; " << section(0) << ", " << section(1) << "]";
-}
-
 SwitchNode::SwitchNode(Type type, Identifier id)
     : Node(type, std::move(id)), m_common(ID_NULL), m_straight(ID_NULL),
       m_diverging(ID_NULL) {
@@ -127,6 +123,40 @@ bool SwitchNode::couldTraverse(size_t from, size_t to) const {
     }
 }
 
+Section::Section(Identifier id, bool isBidir)
+    : m_id(std::move(id)), m_start(ID_NULL), m_end(ID_NULL),
+      m_bidirectional(isBidir) {}
+
+void Section::setDestination(std::unique_ptr<Destination> data) {
+    m_dest = std::move(data);
+}
+
+namespace {
+const char *fmt(const Identifier &id) {
+    if (isIdOrNull(id) && !isId(id)) {
+        return "#null";
+    }
+
+    return id.c_str();
+}
+} // namespace
+
+std::ostream &operator<<(std::ostream &out, const Node &node) {
+    node.print(out);
+    return out;
+}
+
+std::ostream &operator<<(std::ostream &out, const Section &section) {
+    out << fmt(section.id()) << " [Section; " << fmt(section.start()) << ", "
+        << fmt(section.end()) << "]";
+    return out;
+}
+
+void ThruNode::print(std::ostream &out) const {
+    out << id() << " [THRU; " << fmt(section(0)) << ", " << fmt(section(1))
+        << "]";
+}
+
 void SwitchNode::print(std::ostream &out) const {
     out << id();
 
@@ -142,16 +172,8 @@ void SwitchNode::print(std::ostream &out) const {
         break;
     }
 
-    out << "C/S/D: " << common() << ", " << straight() << ", " << diverging()
-        << "]";
-}
-
-Section::Section(Identifier id, bool isBidir)
-    : m_id(std::move(id)), m_start(ID_NULL), m_end(ID_NULL),
-      m_bidirectional(isBidir) {}
-
-void Section::setDestination(std::unique_ptr<Destination> data) {
-    m_dest = std::move(data);
+    out << "C/S/D: " << fmt(common()) << ", " << fmt(straight()) << ", "
+        << fmt(diverging()) << "]";
 }
 
 } // namespace piwcs::prw

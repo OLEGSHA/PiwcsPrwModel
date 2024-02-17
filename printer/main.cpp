@@ -9,5 +9,7 @@ int main() {
 
     model.addNode(std::make_unique<ThruNode>("12345"));
 
+    std::cout << *model.node("12345") << std::endl;
+
     return 0;
 }
