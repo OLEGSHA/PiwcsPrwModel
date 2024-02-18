@@ -130,17 +130,17 @@ TEST(Model, AddSectionWithDestination) {
     Model model;
 
     auto res = model.addSection(std::make_unique<Section>(
-        "123", false, std::make_unique<Destination>("1.0.0", "Name1")));
+        "123", false, 0, std::make_unique<Destination>("1.0.0", "Name1")));
     EXPECT_EQ(res, Model::ADD_OK);
     EXPECT_EQ(model.sections().size(), 1);
 
     res = model.addSection(std::make_unique<Section>(
-        "456", false, std::make_unique<Destination>("1.0.1", "Name1")));
+        "456", false, 0, std::make_unique<Destination>("1.0.1", "Name1")));
     EXPECT_EQ(res, Model::ADD_OK);
     EXPECT_EQ(model.sections().size(), 2);
 
     res = model.addSection(std::make_unique<Section>(
-        "789", false, std::make_unique<Destination>("1.0.1", "Name1")));
+        "789", false, 0, std::make_unique<Destination>("1.0.1", "Name1")));
     EXPECT_EQ(res, Model::ADD_DUPLICATE);
     EXPECT_EQ(model.sections().size(), 2);
 }

@@ -502,20 +502,26 @@ class SwitchNode : public Node {
  */
 class Section {
 
+  public:
+    using Length = uint32_t;
+
+  private:
     Identifier m_id;
 
     Identifier m_start;
     Identifier m_end;
     bool m_bidirectional;
 
+    Length m_length;
+
     std::unique_ptr<Destination> m_dest;
 
   public:
     /**
-     * Constructs a new Section with the given ID, directionality and,
-     * optionally, destination data.
+     * Constructs a new Section with the given ID, directionality, and,
+     * optionally, length, destination data.
      */
-    Section(Identifier, bool isBidir,
+    Section(Identifier, bool isBidir, Length length = 0,
             std::unique_ptr<Destination> dest = nullptr);
 
     /**
@@ -593,6 +599,16 @@ class Section {
     [[nodiscard]] bool canTraverse(size_t from, size_t to) const {
         return (from == 0 && to == 1) || (isBidir() && from == 1 && to == 0);
     }
+
+    /**
+     * Returns the length of this section.
+     *
+     * Length can be zero exactly, meaning it is negligeable. Otherwise it
+     * should be significantly greater than zero.
+     *
+     * @return the lenght of this section
+     */
+    [[nodiscard]] Length length() const { return m_length; }
 
     /**
      * Returns `true` iff this Section has Destination data.

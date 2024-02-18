@@ -171,9 +171,10 @@ bool SwitchNode::couldTraverse(size_t from, size_t to) const {
     }
 }
 
-Section::Section(Identifier id, bool isBidir, std::unique_ptr<Destination> dest)
+Section::Section(Identifier id, bool isBidir, Length length,
+                 std::unique_ptr<Destination> dest)
     : m_id(std::move(id)), m_start(ID_NULL), m_end(ID_NULL),
-      m_bidirectional(isBidir), m_dest(std::move(dest)) {}
+      m_bidirectional(isBidir), m_length(length), m_dest(std::move(dest)) {}
 
 namespace {
 const char *fmt(const Identifier &id) {
