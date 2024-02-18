@@ -31,6 +31,24 @@ Model::AddResult Model::addNode(std::unique_ptr<Node> node) {
     return ADD_OK;
 }
 
+Model::AddResult Model::addSection(std::unique_ptr<Section> section) {
+
+    // Check for duplicate IDs
+    if (this->section(section->id()) != nullptr) {
+        return ADD_DUPLICATE;
+    }
+
+    // Check for non-null node IDs
+    if (isId(section->start()) || isId(section->end())) {
+        return ADD_HAS_REF;
+    }
+
+    // TODO check destination data
+
+    m_sections[section->id()] = std::move(section);
+    return ADD_OK;
+}
+
 Model::RemoveResult Model::removeNode(const Identifier &id) {
 
     auto it = m_nodes.find(id);
@@ -51,6 +69,26 @@ Model::RemoveResult Model::removeNode(const Identifier &id) {
     }
 
     m_nodes.erase(it);
+    return REMOVE_OK;
+}
+
+Model::RemoveResult Model::removeSection(const Identifier &id) {
+
+    auto it = m_sections.find(id);
+
+    if (it == m_sections.end()) {
+        return REMOVE_NOT_FOUND;
+    }
+
+    const Section &section = *it->second;
+
+    // Check for non-null node IDs
+    // This is equivalent to searching for references to section but much faster
+    if (isId(section.start()) || isId(section.end())) {
+        return REMOVE_REFERENCED;
+    }
+
+    m_sections.erase(it);
     return REMOVE_OK;
 }
 

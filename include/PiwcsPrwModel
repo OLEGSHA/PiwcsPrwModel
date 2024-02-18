@@ -148,6 +148,23 @@ class Model {
     AddResult addNode(std::unique_ptr<Node> node);
 
     /**
+     * Adds an existing Section to the model.
+     *
+     * The operation may fail if the section with given ID already exists
+     * (`ADD_DUPLICATE`), or if the section references any entities
+     * (`ADD_HAS_REF`). Should addition fail, all objects remain valid and
+     * no change is made.
+     *
+     * The `unique_ptr` must not be empty.
+     *
+     * @param node the Section to add
+     *
+     * @return `ADD_OK` upon success, `ADD_DUPLICATE` or `ADD_UNKNOWN_REF` upon
+     * failure
+     */
+    AddResult addSection(std::unique_ptr<Section> section);
+
+    /**
      * Possible return values of `remove*` methods.
      */
     enum RemoveResult {
@@ -182,6 +199,21 @@ class Model {
      * `REMOVE_REFERENCED` upon failure
      */
     RemoveResult removeNode(const Identifier &id);
+
+    /**
+     * Removes a Section from the model.
+     *
+     * The operation may fail if the section with given ID cannot be found
+     * (`REMOVE_NOT_FOUND`), or if the section is still referenced by some
+     * entity (`REMOVE_REFERENCED`). Should removal fail, all objects remain
+     * valid and no change is made.
+     *
+     * @param id the ID of the Section to remove
+     *
+     * @return `REMOVE_OK` upon success, `REMOVE_NOT_FOUND` or
+     * `REMOVE_REFERENCED` upon failure
+     */
+    RemoveResult removeSection(const Identifier &id);
 
     /**
      * Searches for a Node with the given ID.

@@ -106,3 +106,53 @@ TEST(Model, RemoveNode) {
     EXPECT_EQ(res, Model::REMOVE_REFERENCED);
     EXPECT_FALSE(model.nodes().empty());
 }
+
+TEST(Model, AddSection) {
+    Model model;
+
+    auto res = model.addSection(std::make_unique<Section>("123", false));
+    EXPECT_EQ(res, Model::ADD_OK);
+    EXPECT_EQ(model.sections().size(), 1);
+
+    res = model.addSection(std::make_unique<Section>("123", false));
+    EXPECT_EQ(res, Model::ADD_DUPLICATE);
+    EXPECT_EQ(model.sections().size(), 1);
+
+    // N.B.: there isn't a good way to force ADD_HAS_REF at this point in unit
+    // tests, so this will get covered in more advanced tests
+
+    res = model.addSection(std::make_unique<Section>("456", false));
+    EXPECT_EQ(res, Model::ADD_OK);
+    EXPECT_EQ(model.sections().size(), 2);
+}
+
+TEST(Model, FindSection) {
+    Model model;
+
+    model.addSection(std::make_unique<Section>("123", false));
+    model.addSection(std::make_unique<Section>("456", false));
+
+    const Section *section = model.section("123");
+    EXPECT_NE(section, nullptr);
+    EXPECT_EQ(section->id(), "123");
+
+    section = model.section("000");
+    EXPECT_EQ(section, nullptr);
+}
+
+TEST(Model, RemoveSection) {
+    Model model;
+
+    model.addSection(std::make_unique<Section>("123", false));
+
+    auto res = model.removeSection("000");
+    EXPECT_EQ(res, Model::REMOVE_NOT_FOUND);
+    EXPECT_FALSE(model.sections().empty());
+
+    res = model.removeSection("123");
+    EXPECT_EQ(res, Model::REMOVE_OK);
+    EXPECT_TRUE(model.sections().empty());
+
+    // N.B.: there isn't a good way to force REMOVE_REFERENCED at this point in
+    // unit tests, so this will get covered in more advanced tests
+}
