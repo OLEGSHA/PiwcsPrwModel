@@ -151,9 +151,10 @@ class Model {
      * Adds an existing Section to the model.
      *
      * The operation may fail if the section with given ID already exists
-     * (`ADD_DUPLICATE`), or if the section references any entities
-     * (`ADD_HAS_REF`). Should addition fail, all objects remain valid and
-     * no change is made.
+     * (`ADD_DUPLICATE`), if the section is a destination and another
+     * destination with the same address already exists (`ADD_DUPLICATE`), or if
+     * the section references any entities (`ADD_HAS_REF`). Should addition
+     * fail, all objects remain valid and no change is made.
      *
      * The `unique_ptr` must not be empty.
      *
@@ -511,9 +512,11 @@ class Section {
 
   public:
     /**
-     * Constructs a new Section with the given ID and directionality
+     * Constructs a new Section with the given ID, directionality and,
+     * optionally, destination data.
      */
-    Section(Identifier, bool isBidir);
+    Section(Identifier, bool isBidir,
+            std::unique_ptr<Destination> dest = nullptr);
 
     /**
      * Returns the Identifier of this Section.
@@ -614,21 +617,6 @@ class Section {
     }
 
     /**
-     * Changes the destination data of this Section.
-     *
-     * If `data` is not empty, this Section becomes a destination described by
-     * the provided object which becomes owned by this Section. Any previous
-     * destination data is discarded and Destination objects deleted.
-     *
-     * If `data` is empty, this Section ceases to be destination if it was one.
-     * Any previous destination data is discarded and Destination objects
-     * deleted.
-     *
-     * @param data new destination data or `nullptr`
-     */
-    void setDestination(std::unique_ptr<Destination> data);
-
-    /**
      * Outputs a textual representation of this Section to the `ostream`.
      */
     friend std::ostream &operator<<(std::ostream &, const Section &);
@@ -639,10 +627,11 @@ class Section {
  *
  * These objects may be attached to Sections to turn them into destinations.
  *
- * Destinations, as all Model entities, are mutable objects.
+ * Destinations are immutable objects.
  */
-struct Destination {
+class Destination {
 
+  public:
     /**
      * Type alias for addresses. Effectively a string.
      */
@@ -653,24 +642,39 @@ struct Destination {
      */
     using Name = std::string;
 
+  private:
+    Address m_address;
+    Name m_name;
+
+  public:
     /**
-     * The address of this Destination.
+     * Creates a new Destination with given address and name.
+     */
+    Destination(Address address, Name name)
+        : m_address(std::move(address)), m_name(std::move(name)) {}
+
+    /**
+     * Returns the address of this Destination.
      *
      * An address is a machine-friendly identifier of a destination. They are
      * used for routing.
      *
      * Addresses must be ASCII-encoded strings.
+     *
+     * @return the address of this Destination
      */
-    Address address;
+    [[nodiscard]] const Address &address() const { return m_address; }
 
     /**
-     * The name of this Destination.
+     * Returns the name of this Destination.
      *
      * A name is a user-friendly label for the destination.
      *
      * Names must not be inspected and may use any encoding.
+     *
+     * @return the name of this Destination
      */
-    Name name;
+    [[nodiscard]] const Name &name() const { return m_name; }
 };
 
 } // namespace piwcs::prw

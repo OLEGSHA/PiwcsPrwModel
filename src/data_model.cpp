@@ -38,12 +38,22 @@ Model::AddResult Model::addSection(std::unique_ptr<Section> section) {
         return ADD_DUPLICATE;
     }
 
+    // Check for duplicate destination address
+    if (section->isDestination()) {
+        const auto &address = section->destination()->address();
+        for (const auto &it : sections()) {
+            const auto &otherSection = *it.second;
+            if (otherSection.isDestination() &&
+                otherSection.destination()->address() == address) {
+                return ADD_DUPLICATE;
+            }
+        }
+    }
+
     // Check for non-null node IDs
     if (isId(section->start()) || isId(section->end())) {
         return ADD_HAS_REF;
     }
-
-    // TODO check destination data
 
     m_sections[section->id()] = std::move(section);
     return ADD_OK;
@@ -82,7 +92,7 @@ Model::RemoveResult Model::removeSection(const Identifier &id) {
 
     const Section &section = *it->second;
 
-    // Check for non-null node IDs
+    // Check for non-null section IDs
     // This is equivalent to searching for references to section but much faster
     if (isId(section.start()) || isId(section.end())) {
         return REMOVE_REFERENCED;
@@ -161,13 +171,9 @@ bool SwitchNode::couldTraverse(size_t from, size_t to) const {
     }
 }
 
-Section::Section(Identifier id, bool isBidir)
+Section::Section(Identifier id, bool isBidir, std::unique_ptr<Destination> dest)
     : m_id(std::move(id)), m_start(ID_NULL), m_end(ID_NULL),
-      m_bidirectional(isBidir) {}
-
-void Section::setDestination(std::unique_ptr<Destination> data) {
-    m_dest = std::move(data);
-}
+      m_bidirectional(isBidir), m_dest(std::move(dest)) {}
 
 namespace {
 const char *fmt(const Identifier &id) {
