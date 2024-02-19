@@ -14,6 +14,11 @@ bool isIdOrNull(const Identifier &id) { return id.empty() || isId(id); }
 
 Model::AddResult Model::addNode(std::unique_ptr<Node> node) {
 
+    // Check ID
+    if (!isId(node->id())) {
+        return ADD_BAD_ID;
+    }
+
     // Check for duplicate IDs
     if (this->node(node->id()) != nullptr) {
         return ADD_DUPLICATE;
@@ -32,6 +37,11 @@ Model::AddResult Model::addNode(std::unique_ptr<Node> node) {
 }
 
 Model::AddResult Model::addSection(std::unique_ptr<Section> section) {
+
+    // Check ID
+    if (!isId(section->id())) {
+        return ADD_BAD_ID;
+    }
 
     // Check for duplicate IDs
     if (this->section(section->id()) != nullptr) {

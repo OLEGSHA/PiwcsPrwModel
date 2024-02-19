@@ -53,6 +53,10 @@ TEST(Model, AddNode) {
     EXPECT_EQ(res, Model::ADD_OK);
     EXPECT_EQ(model.nodes().size(), 1);
 
+    res = model.addNode(std::make_unique<ThruNode>(ID_INVALID));
+    EXPECT_EQ(res, Model::ADD_BAD_ID);
+    EXPECT_EQ(model.nodes().size(), 1);
+
     res = model.addNode(std::make_unique<ThruNode>("123"));
     EXPECT_EQ(res, Model::ADD_DUPLICATE);
     EXPECT_EQ(model.nodes().size(), 1);
@@ -112,6 +116,10 @@ TEST(Model, AddSection) {
 
     auto res = model.addSection(std::make_unique<Section>("123", false));
     EXPECT_EQ(res, Model::ADD_OK);
+    EXPECT_EQ(model.sections().size(), 1);
+
+    res = model.addSection(std::make_unique<Section>(ID_INVALID, false));
+    EXPECT_EQ(res, Model::ADD_BAD_ID);
     EXPECT_EQ(model.sections().size(), 1);
 
     res = model.addSection(std::make_unique<Section>("123", false));
