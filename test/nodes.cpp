@@ -32,16 +32,16 @@ TEST(ThruNode, AllowedRoutes) {
 }
 
 TEST(SwitchNode, Constructor) {
-    SwitchNode node1(Node::MOTORIZED, "123");
-    SwitchNode node2(Node::PASSIVE, "123");
-    SwitchNode node3(Node::FIXED, "123");
+    SwitchNode node1(Node::Type::MOTORIZED, "123");
+    SwitchNode node2(Node::Type::PASSIVE, "123");
+    SwitchNode node3(Node::Type::FIXED, "123");
     (void)node1;
     (void)node2;
     (void)node3;
 }
 
 TEST(SwitchNode, MotorizedAllowedRoutes) {
-    SwitchNode node(Node::MOTORIZED, "123");
+    SwitchNode node(Node::Type::MOTORIZED, "123");
     size_t max = node.sectionCount();
 
     // Invalid inputs
@@ -67,7 +67,7 @@ TEST(SwitchNode, MotorizedAllowedRoutes) {
 }
 
 TEST(SwitchNode, PassiveAllowedRoutes) {
-    SwitchNode node(Node::PASSIVE, "123");
+    SwitchNode node(Node::Type::PASSIVE, "123");
     size_t max = node.sectionCount();
 
     // Invalid inputs
@@ -93,7 +93,7 @@ TEST(SwitchNode, PassiveAllowedRoutes) {
 }
 
 TEST(SwitchNode, FixedAllowedRoutes) {
-    SwitchNode node(Node::FIXED, "123");
+    SwitchNode node(Node::Type::FIXED, "123");
     size_t max = node.sectionCount();
 
     // Invalid inputs

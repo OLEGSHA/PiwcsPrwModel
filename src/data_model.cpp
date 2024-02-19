@@ -112,6 +112,38 @@ Model::RemoveResult Model::removeSection(const Identifier &id) {
     return RemoveResult::OK;
 }
 
+Model::LinkResult Model::link(const Identifier &sectionId,
+                              const Identifier &startNodeId, Slot startSlot,
+                              const Identifier &endNodeId, Slot endSlot) {
+
+    const Section *section = this->section(sectionId);
+    const Node *start = this->node(startNodeId);
+    const Node *end = this->node(endNodeId);
+
+    if (section == nullptr || start == nullptr || end == nullptr ||
+        startSlot >= start->sectionCount() || endSlot >= end->sectionCount()) {
+        return LinkResult::NOT_FOUND;
+    }
+
+    if (start == end && startSlot == endSlot) {
+        return LinkResult::SAME_SLOT;
+    }
+
+    if (start->section(startSlot) != ID_NULL ||
+        end->section(endSlot) != ID_NULL) {
+        return LinkResult::NODE_OCCUPIED;
+    }
+
+    // Check for section.end() is redundant
+    if (section->start() != ID_NULL) {
+        return LinkResult::SECTION_OCCUPIED;
+    }
+
+    // TODO implement
+
+    return LinkResult::OK;
+}
+
 const Node *Model::node(const Identifier &id) {
     auto it = m_nodes.find(id);
     return it == m_nodes.end() ? nullptr : it->second.get();
@@ -122,7 +154,7 @@ const Section *Model::section(const Identifier &id) {
     return it == m_sections.end() ? nullptr : it->second.get();
 }
 
-ThruNode::ThruNode(const Identifier &id) : Node(THRU, id) {
+ThruNode::ThruNode(const Identifier &id) : Node(Type::THRU, id) {
     m_sections[0] = ID_NULL;
     m_sections[1] = ID_NULL;
 }
@@ -143,9 +175,9 @@ SwitchNode::SwitchNode(Type type, Identifier id)
       m_diverging(ID_NULL) {
 #ifdef DEBUG
     switch (type) {
-    case Node::MOTORIZED:
-    case Node::PASSIVE:
-    case Node::FIXED:
+    case Type::MOTORIZED:
+    case Type::PASSIVE:
+    case Type::FIXED:
         break;
     default:
         throw std::invalid_argument("Illegal SwitchNode type");
@@ -172,9 +204,9 @@ bool SwitchNode::couldTraverse(size_t from, size_t to) const {
     }
 
     switch (type()) {
-    case Node::MOTORIZED:
+    case Type::MOTORIZED:
         return to == 0;
-    case Node::PASSIVE:
+    case Type::PASSIVE:
         return from == 0;
     default:
         return to == 0 || (from == 0 && to == 1);
@@ -216,10 +248,10 @@ void SwitchNode::print(std::ostream &out) const {
     out << id();
 
     switch (type()) {
-    case Node::MOTORIZED:
+    case Type::MOTORIZED:
         out << " [MOTORIZED; ";
         break;
-    case Node::PASSIVE:
+    case Type::PASSIVE:
         out << " [PASSIVE; ";
         break;
     default:

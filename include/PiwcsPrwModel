@@ -57,6 +57,11 @@ bool isIdOrNull(const Identifier &);
  */
 bool isId(const Identifier &);
 
+/**
+ * Type alias for Node and Section slots. Effectively an unsigned integer.
+ */
+using Slot = size_t;
+
 class Node;
 class Section;
 class Destination;
@@ -144,16 +149,14 @@ class Model {
      * Adds an existing Node to the model.
      *
      * The operation may fail if the node with given ID already exists
-     * (`ADD_DUPLICATE`), or if the node references any entities
-     * (`ADD_HAS_REF`). Should addition fail, all objects remain valid and
-     * no change is made.
+     * (`DUPLICATE`), or if the node references any entities (`HAS_REF`). Should
+     * addition fail, all objects remain valid and no change is made.
      *
      * The `unique_ptr` must not be empty.
      *
      * @param node the Node to add
      *
-     * @return `ADD_OK` upon success, `ADD_DUPLICATE` or `ADD_UNKNOWN_REF` upon
-     * failure
+     * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
      */
     AddResult addNode(std::unique_ptr<Node> node);
 
@@ -161,17 +164,16 @@ class Model {
      * Adds an existing Section to the model.
      *
      * The operation may fail if the section with given ID already exists
-     * (`ADD_DUPLICATE`), if the section is a destination and another
-     * destination with the same address already exists (`ADD_DUPLICATE`), or if
-     * the section references any entities (`ADD_HAS_REF`). Should addition
-     * fail, all objects remain valid and no change is made.
+     * (`DUPLICATE`), if the section is a destination and another destination
+     * with the same address already exists (`DUPLICATE`), or if the section
+     * references any entities (`HAS_REF`). Should addition fail, all objects
+     * remain valid and no change is made.
      *
      * The `unique_ptr` must not be empty.
      *
      * @param node the Section to add
      *
-     * @return `ADD_OK` upon success, `ADD_DUPLICATE` or `ADD_UNKNOWN_REF` upon
-     * failure
+     * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
      */
     AddResult addSection(std::unique_ptr<Section> section);
 
@@ -200,14 +202,13 @@ class Model {
      * Removes a Node from the model.
      *
      * The operation may fail if the node with given ID cannot be found
-     * (`REMOVE_NOT_FOUND`), or if the node is still referenced by some entity
-     * (`REMOVE_REFERENCED`). Should removal fail, all objects remain valid and
-     * no change is made.
+     * (`NOT_FOUND`), or if the node is still referenced by some entity
+     * (`REFERENCED`). Should removal fail, all objects remain valid and no
+     * change is made.
      *
      * @param id the ID of the Node to remove
      *
-     * @return `REMOVE_OK` upon success, `REMOVE_NOT_FOUND` or
-     * `REMOVE_REFERENCED` upon failure
+     * @return `OK` upon success, `NOT_FOUND` or `REFERENCED` upon failure
      */
     RemoveResult removeNode(const Identifier &id);
 
@@ -215,16 +216,68 @@ class Model {
      * Removes a Section from the model.
      *
      * The operation may fail if the section with given ID cannot be found
-     * (`REMOVE_NOT_FOUND`), or if the section is still referenced by some
-     * entity (`REMOVE_REFERENCED`). Should removal fail, all objects remain
-     * valid and no change is made.
+     * (`NOT_FOUND`), or if the section is still referenced by some entity
+     * (`REFERENCED`). Should removal fail, all objects remain valid and no
+     * change is made.
      *
      * @param id the ID of the Section to remove
      *
-     * @return `REMOVE_OK` upon success, `REMOVE_NOT_FOUND` or
-     * `REMOVE_REFERENCED` upon failure
+     * @return `OK` upon success, `NOT_FOUND` or `REFERENCED` upon failure
      */
     RemoveResult removeSection(const Identifier &id);
+
+    /**
+     * Possible return values of `link` method.
+     */
+    enum class LinkResult {
+        /**
+         * Linkage was successful, the Model has changed.
+         */
+        OK,
+
+        /**
+         * Linkage was aborted because some of the nodes, section or slots could
+         * not be found.
+         */
+        NOT_FOUND,
+
+        /**
+         * Linkage was aborted because one of the nodes is already occupied.
+         */
+        NODE_OCCUPIED,
+
+        /**
+         * Linkage was aborted because the section is already occupied.
+         */
+        SECTION_OCCUPIED,
+
+        /**
+         * Linkage was aborted because the start and the end are the same slot
+         * of the same node.
+         */
+        SAME_SLOT
+    };
+
+    /**
+     * Links two Nodes using a Section.
+     *
+     * The operation may fail if some of the IDs cannot be resolved to existing
+     * entities (`NOT_FOUND`), some requested slot does not exist in its Node
+     * (`NOT_FOUND`), some slot is already connected (`NODE_OCCUPIED`), the
+     * section is already linking some Nodes (`SECTION_OCCUPIED`), or
+     * `startNode == endNode && startSlot == endSlot` (`SAME_SLOT`).
+     *
+     * @param sectionId ID of the section to use
+     * @param startNodeId ID of the Node to connect to the start of the section
+     * @param startSlot Slot of the start Node to connect to
+     * @param endNodeId ID of the Node to connect to the end of the section
+     * @param endSlot Slot of the end Node to connect to
+     *
+     * @return `OK` upon success, `NOT_FOUND`, `NODE_OCCUPIED`,
+     * `SECTION_OCCUPIED` or `SAME_SLOT` upon failure
+     */
+    LinkResult link(const Identifier &sectionId, const Identifier &startNodeId,
+                    Slot startSlot, const Identifier &endNodeId, Slot endSlot);
 
     /**
      * Searches for a Node with the given ID.
@@ -264,7 +317,7 @@ class Node {
      *
      * @see type()
      */
-    enum Type {
+    enum class Type {
         /**
          * A node connecting two sections of a single track.
          */
@@ -335,7 +388,7 @@ class Node {
      *
      * @return the number of Sections Nodes of this Type connect
      */
-    [[nodiscard]] virtual size_t sectionCount() const = 0;
+    [[nodiscard]] virtual Slot sectionCount() const = 0;
 
     /**
      * Returns the ID of the section in the requested slot, `ID_NULL` if the
@@ -343,7 +396,7 @@ class Node {
      *
      * @return the ID of the requested section, `ID_NULL` or `ID_INVALID`
      */
-    [[nodiscard]] virtual const Identifier &section(size_t index) const = 0;
+    [[nodiscard]] virtual const Identifier &section(Slot) const = 0;
 
     /**
      * Determines whether travel from slot `from` to slot `to` would be possible
@@ -359,7 +412,7 @@ class Node {
      * that would permit travel from the Section at slot `from` to the Section
      * at slot `to`
      */
-    [[nodiscard]] virtual bool couldTraverse(size_t from, size_t to) const = 0;
+    [[nodiscard]] virtual bool couldTraverse(Slot from, Slot to) const = 0;
 
   protected:
     /**
@@ -388,11 +441,11 @@ class ThruNode : public Node {
      */
     ThruNode(const Identifier &);
 
-    [[nodiscard]] size_t sectionCount() const override { return 2; }
+    [[nodiscard]] Slot sectionCount() const override { return 2; }
 
-    [[nodiscard]] const Identifier &section(size_t index) const override;
+    [[nodiscard]] const Identifier &section(Slot) const override;
 
-    [[nodiscard]] bool couldTraverse(size_t from, size_t to) const override;
+    [[nodiscard]] bool couldTraverse(Slot from, Slot to) const override;
 
   protected:
     void print(std::ostream &) const override;
@@ -444,6 +497,21 @@ class SwitchNode : public Node {
 
   public:
     /**
+     * Slot of the common track.
+     */
+    static constexpr Slot COMMON = 0;
+
+    /**
+     * Slot of the straight track.
+     */
+    static constexpr Slot STRAIGHT = 1;
+
+    /**
+     * Slot of the diverging track.
+     */
+    static constexpr Slot DIVERGING = 2;
+
+    /**
      * Constructs a SwitchNode with the given type and ID.
      *
      * Type must be one of `MOTORIZED`, `PASSIVE` and `FIXED`.
@@ -477,7 +545,7 @@ class SwitchNode : public Node {
      */
     [[nodiscard]] const Identifier &diverging() const { return m_diverging; }
 
-    [[nodiscard]] size_t sectionCount() const override { return 3; }
+    [[nodiscard]] Slot sectionCount() const override { return 3; }
 
     /**
      * @copydoc Node::section
@@ -491,9 +559,9 @@ class SwitchNode : public Node {
      * @see straight
      * @see diverging
      */
-    [[nodiscard]] const Identifier &section(size_t index) const override;
+    [[nodiscard]] const Identifier &section(Slot) const override;
 
-    [[nodiscard]] bool couldTraverse(size_t from, size_t to) const override;
+    [[nodiscard]] bool couldTraverse(Slot from, Slot to) const override;
 
   protected:
     void print(std::ostream &) const override;
