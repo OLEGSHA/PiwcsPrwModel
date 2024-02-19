@@ -76,7 +76,7 @@ class Destination;
  *   - Node identifiers are valid, non-null and globally unique
  *   - Section identifiers are valid, non-null and globally unique
  *   - All identifier slots are either empty or contain IDs of known entities
- *   - Nodes and section connection information is not contradictory
+ *   - Nodes and section connection information is internally consistent
  *   - All Destination objects are valid
  *   - Destination addresses are globally unique
  */
@@ -116,28 +116,28 @@ class Model {
     /**
      * Possible return values of `add*` methods.
      */
-    enum AddResult {
+    enum class AddResult {
         /**
          * Addition was successful, the Model has changed.
          */
-        ADD_OK,
+        OK,
 
         /**
          * Addition was aborted because the ID is null or invalid.
          */
-        ADD_BAD_ID,
+        BAD_ID,
 
         /**
          * Addition was aborted because an entity with an identical ID is
          * already present.
          */
-        ADD_DUPLICATE,
+        DUPLICATE,
 
         /**
          * Addition was aborted because the entity being added has some non-null
          * references to other entities.
          */
-        ADD_HAS_REF
+        HAS_REF
     };
 
     /**
@@ -178,22 +178,22 @@ class Model {
     /**
      * Possible return values of `remove*` methods.
      */
-    enum RemoveResult {
+    enum class RemoveResult {
         /**
          * Removal was successful, the Model has changed.
          */
-        REMOVE_OK,
+        OK,
 
         /**
          * Removal has failed because an entity with such ID could not be found.
          */
-        REMOVE_NOT_FOUND,
+        NOT_FOUND,
 
         /**
          * Removal was aborted because other entities exist that reference the
          * requested entity.
          */
-        REMOVE_REFERENCED
+        REFERENCED
     };
 
     /**

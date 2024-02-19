@@ -16,36 +16,36 @@ Model::AddResult Model::addNode(std::unique_ptr<Node> node) {
 
     // Check ID
     if (!isId(node->id())) {
-        return ADD_BAD_ID;
+        return AddResult::BAD_ID;
     }
 
     // Check for duplicate IDs
     if (this->node(node->id()) != nullptr) {
-        return ADD_DUPLICATE;
+        return AddResult::DUPLICATE;
     }
 
     // Check for non-null section IDs
     size_t count = node->sectionCount();
     for (size_t i = 0; i < count; i++) {
         if (isId(node->section(i))) {
-            return ADD_HAS_REF;
+            return AddResult::HAS_REF;
         }
     }
 
     m_nodes[node->id()] = std::move(node);
-    return ADD_OK;
+    return AddResult::OK;
 }
 
 Model::AddResult Model::addSection(std::unique_ptr<Section> section) {
 
     // Check ID
     if (!isId(section->id())) {
-        return ADD_BAD_ID;
+        return AddResult::BAD_ID;
     }
 
     // Check for duplicate IDs
     if (this->section(section->id()) != nullptr) {
-        return ADD_DUPLICATE;
+        return AddResult::DUPLICATE;
     }
 
     // Check for duplicate destination address
@@ -55,18 +55,18 @@ Model::AddResult Model::addSection(std::unique_ptr<Section> section) {
             const auto &otherSection = *it.second;
             if (otherSection.isDestination() &&
                 otherSection.destination()->address() == address) {
-                return ADD_DUPLICATE;
+                return AddResult::DUPLICATE;
             }
         }
     }
 
     // Check for non-null node IDs
     if (isId(section->start()) || isId(section->end())) {
-        return ADD_HAS_REF;
+        return AddResult::HAS_REF;
     }
 
     m_sections[section->id()] = std::move(section);
-    return ADD_OK;
+    return AddResult::OK;
 }
 
 Model::RemoveResult Model::removeNode(const Identifier &id) {
@@ -74,7 +74,7 @@ Model::RemoveResult Model::removeNode(const Identifier &id) {
     auto it = m_nodes.find(id);
 
     if (it == m_nodes.end()) {
-        return REMOVE_NOT_FOUND;
+        return RemoveResult::NOT_FOUND;
     }
 
     const Node &node = *it->second;
@@ -84,12 +84,12 @@ Model::RemoveResult Model::removeNode(const Identifier &id) {
     size_t count = node.sectionCount();
     for (size_t i = 0; i < count; i++) {
         if (isId(node.section(i))) {
-            return REMOVE_REFERENCED;
+            return RemoveResult::REFERENCED;
         }
     }
 
     m_nodes.erase(it);
-    return REMOVE_OK;
+    return RemoveResult::OK;
 }
 
 Model::RemoveResult Model::removeSection(const Identifier &id) {
@@ -97,7 +97,7 @@ Model::RemoveResult Model::removeSection(const Identifier &id) {
     auto it = m_sections.find(id);
 
     if (it == m_sections.end()) {
-        return REMOVE_NOT_FOUND;
+        return RemoveResult::NOT_FOUND;
     }
 
     const Section &section = *it->second;
@@ -105,11 +105,11 @@ Model::RemoveResult Model::removeSection(const Identifier &id) {
     // Check for non-null section IDs
     // This is equivalent to searching for references to section but much faster
     if (isId(section.start()) || isId(section.end())) {
-        return REMOVE_REFERENCED;
+        return RemoveResult::REFERENCED;
     }
 
     m_sections.erase(it);
-    return REMOVE_OK;
+    return RemoveResult::OK;
 }
 
 const Node *Model::node(const Identifier &id) {

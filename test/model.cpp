@@ -50,25 +50,25 @@ TEST(Model, AddNode) {
     Model model;
 
     auto res = model.addNode(std::make_unique<ThruNode>("123"));
-    EXPECT_EQ(res, Model::ADD_OK);
+    EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.nodes().size(), 1);
 
     res = model.addNode(std::make_unique<ThruNode>(ID_INVALID));
-    EXPECT_EQ(res, Model::ADD_BAD_ID);
+    EXPECT_EQ(res, Model::AddResult::BAD_ID);
     EXPECT_EQ(model.nodes().size(), 1);
 
     res = model.addNode(std::make_unique<ThruNode>("123"));
-    EXPECT_EQ(res, Model::ADD_DUPLICATE);
+    EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.nodes().size(), 1);
 
     auto connected = std::make_unique<ConnectedNode>("456");
     connected->setSection("555");
     res = model.addNode(std::move(connected));
-    EXPECT_EQ(res, Model::ADD_HAS_REF);
+    EXPECT_EQ(res, Model::AddResult::HAS_REF);
     EXPECT_EQ(model.nodes().size(), 1);
 
     res = model.addNode(std::make_unique<ThruNode>("456"));
-    EXPECT_EQ(res, Model::ADD_OK);
+    EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.nodes().size(), 2);
 }
 
@@ -92,11 +92,11 @@ TEST(Model, RemoveNode) {
     model.addNode(std::make_unique<ThruNode>("123"));
 
     auto res = model.removeNode("000");
-    EXPECT_EQ(res, Model::REMOVE_NOT_FOUND);
+    EXPECT_EQ(res, Model::RemoveResult::NOT_FOUND);
     EXPECT_FALSE(model.nodes().empty());
 
     res = model.removeNode("123");
-    EXPECT_EQ(res, Model::REMOVE_OK);
+    EXPECT_EQ(res, Model::RemoveResult::OK);
     EXPECT_TRUE(model.nodes().empty());
 
     // Hack in a node that has connections
@@ -107,7 +107,7 @@ TEST(Model, RemoveNode) {
     sneaky->setSection("555");
 
     res = model.removeNode("456");
-    EXPECT_EQ(res, Model::REMOVE_REFERENCED);
+    EXPECT_EQ(res, Model::RemoveResult::REFERENCED);
     EXPECT_FALSE(model.nodes().empty());
 }
 
@@ -115,22 +115,22 @@ TEST(Model, AddSection) {
     Model model;
 
     auto res = model.addSection(std::make_unique<Section>("123", false));
-    EXPECT_EQ(res, Model::ADD_OK);
+    EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 1);
 
     res = model.addSection(std::make_unique<Section>(ID_INVALID, false));
-    EXPECT_EQ(res, Model::ADD_BAD_ID);
+    EXPECT_EQ(res, Model::AddResult::BAD_ID);
     EXPECT_EQ(model.sections().size(), 1);
 
     res = model.addSection(std::make_unique<Section>("123", false));
-    EXPECT_EQ(res, Model::ADD_DUPLICATE);
+    EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 1);
 
-    // N.B.: there isn't a good way to force ADD_HAS_REF at this point in unit
-    // tests, so this will get covered in more advanced tests
+    // N.B.: there isn't a good way to force AddResult::HAS_REF at this point in
+    // unit tests, so this will get covered in more advanced tests
 
     res = model.addSection(std::make_unique<Section>("456", false));
-    EXPECT_EQ(res, Model::ADD_OK);
+    EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 2);
 }
 
@@ -139,17 +139,17 @@ TEST(Model, AddSectionWithDestination) {
 
     auto res = model.addSection(std::make_unique<Section>(
         "123", false, 0, std::make_unique<Destination>("1.0.0", "Name1")));
-    EXPECT_EQ(res, Model::ADD_OK);
+    EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 1);
 
     res = model.addSection(std::make_unique<Section>(
         "456", false, 0, std::make_unique<Destination>("1.0.1", "Name1")));
-    EXPECT_EQ(res, Model::ADD_OK);
+    EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 2);
 
     res = model.addSection(std::make_unique<Section>(
         "789", false, 0, std::make_unique<Destination>("1.0.1", "Name1")));
-    EXPECT_EQ(res, Model::ADD_DUPLICATE);
+    EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 2);
 }
 
@@ -173,13 +173,13 @@ TEST(Model, RemoveSection) {
     model.addSection(std::make_unique<Section>("123", false));
 
     auto res = model.removeSection("000");
-    EXPECT_EQ(res, Model::REMOVE_NOT_FOUND);
+    EXPECT_EQ(res, Model::RemoveResult::NOT_FOUND);
     EXPECT_FALSE(model.sections().empty());
 
     res = model.removeSection("123");
-    EXPECT_EQ(res, Model::REMOVE_OK);
+    EXPECT_EQ(res, Model::RemoveResult::OK);
     EXPECT_TRUE(model.sections().empty());
 
-    // N.B.: there isn't a good way to force REMOVE_REFERENCED at this point in
-    // unit tests, so this will get covered in more advanced tests
+    // N.B.: there isn't a good way to force RemoveResult::REFERENCED at this
+    // point in unit tests, so this will get covered in more advanced tests
 }
