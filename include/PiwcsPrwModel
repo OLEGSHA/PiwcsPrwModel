@@ -60,9 +60,10 @@ bool isId(const Identifier &);
 /**
  * Type alias for Node and Section slots. Effectively an unsigned integer.
  */
-using Slot = size_t;
+using SlotId = size_t;
 
 class Node;
+class NodeSlot;
 class Section;
 class Destination;
 
@@ -265,19 +266,20 @@ class Model {
      * entities (`NOT_FOUND`), some requested slot does not exist in its Node
      * (`NOT_FOUND`), some slot is already connected (`NODE_OCCUPIED`), the
      * section is already linking some Nodes (`SECTION_OCCUPIED`), or
-     * `startNode == endNode && startSlot == endSlot` (`SAME_SLOT`).
+     * `startNode == endNode && startSlotId == endSlotId` (`SAME_SLOT`).
      *
      * @param sectionId ID of the section to use
      * @param startNodeId ID of the Node to connect to the start of the section
-     * @param startSlot Slot of the start Node to connect to
+     * @param startSlotId SlotId of the start Node to connect to
      * @param endNodeId ID of the Node to connect to the end of the section
-     * @param endSlot Slot of the end Node to connect to
+     * @param endSlotId SlotId of the end Node to connect to
      *
      * @return `OK` upon success, `NOT_FOUND`, `NODE_OCCUPIED`,
      * `SECTION_OCCUPIED` or `SAME_SLOT` upon failure
      */
     LinkResult link(const Identifier &sectionId, const Identifier &startNodeId,
-                    Slot startSlot, const Identifier &endNodeId, Slot endSlot);
+                    SlotId startSlotId, const Identifier &endNodeId,
+                    SlotId endSlotId);
 
     /**
      * Searches for a Node with the given ID.
@@ -304,154 +306,13 @@ class Model {
     const Section *section(const Identifier &id);
 };
 
+struct NodeTypeInfo;
+
 /**
- * A Node at the joint or intersection of Sections.
+ * A kind of Node reflecting its role, structure and function.
  *
- * Nodes, as all Model entities, are mutable objects.
- */
-class Node {
-
-  public:
-    /**
-     * A kind of Node reflecting its role, structure and function.
-     *
-     * @see type()
-     */
-    enum class Type {
-        /**
-         * A node connecting two sections of a single track.
-         */
-        THRU = 1,
-
-        /**
-         * A motorized switch operated by a routing table.
-         */
-        MOTORIZED = 2,
-
-        /**
-         * A switch that cannot be entered from the common track.
-         */
-        PASSIVE = 3,
-
-        /**
-         * A switch that is fixed in a single position that can be entered from
-         * the common track.
-         */
-        FIXED = 4,
-
-        /**
-         * A level crossing of two tracks.
-         */
-        CROSSING = 5,
-
-        /**
-         * A dead end connected to a bidirectional section.
-         */
-        END = 6
-    };
-
-  private:
-    Type m_type;
-    Identifier m_id;
-
-  public:
-    /**
-     * Constructs a Node with the given type and ID.
-     */
-    Node(Type type, Identifier id) : m_type(type), m_id(std::move(id)) {}
-
-    virtual ~Node() = default;
-
-    /**
-     * Returns the Type of this Node.
-     *
-     * Node Type determines the role, structure and function of the node. Node
-     * types are more specific than implementing classes, and multiple types can
-     * be implemented by a single class. Use this value to differentiate between
-     * different kinds of nodes.
-     *
-     * @return the Type of this Node
-     */
-    [[nodiscard]] Type type() const { return m_type; }
-
-    /**
-     * Returns the Identifier of this Node.
-     *
-     * @return the ID of this Node
-     */
-    [[nodiscard]] const Identifier &id() const { return m_id; }
-
-    /**
-     * Returns the number of Sections this Node connects.
-     *
-     * This value is constant for a given Type.
-     *
-     * @return the number of Sections Nodes of this Type connect
-     */
-    [[nodiscard]] virtual Slot sectionCount() const = 0;
-
-    /**
-     * Returns the ID of the section in the requested slot, `ID_NULL` if the
-     * slot is not yet connected, or `ID_INVALID` if no such slot exists.
-     *
-     * @return the ID of the requested section, `ID_NULL` or `ID_INVALID`
-     */
-    [[nodiscard]] virtual const Identifier &section(Slot) const = 0;
-
-    /**
-     * Determines whether travel from slot `from` to slot `to` would be possible
-     * if appropriate section were connected in these slots.
-     *
-     * This method must not query actual sections connected, if any.
-     *
-     * This value is constant for a given (Type, `from`, `to`) tuple. `false` is
-     * returned for invalid slots. Note that most, but not all Nodes will return
-     * `false` when `from == to`.
-     *
-     * @return `true` if and only if there exists a configuration of Sections
-     * that would permit travel from the Section at slot `from` to the Section
-     * at slot `to`
-     */
-    [[nodiscard]] virtual bool couldTraverse(Slot from, Slot to) const = 0;
-
-  protected:
-    /**
-     * Outputs a textual representation of this Node to the `ostream`.
-     */
-    virtual void print(std::ostream &) const = 0;
-
-    /**
-     * Outputs a textual representation of this Node to the `ostream`.
-     */
-    friend std::ostream &operator<<(std::ostream &, const Node &);
-};
-
-/**
- * A node connecting two sections of a single track. Its Type is `ThruNode`.
+ * ### Switches
  *
- * Use `section(0)` and `section(1)` to access connections.
- */
-class ThruNode : public Node {
-
-    Identifier m_sections[2];
-
-  public:
-    /**
-     * Constructs a new thru node with the given ID.
-     */
-    ThruNode(const Identifier &);
-
-    [[nodiscard]] Slot sectionCount() const override { return 2; }
-
-    [[nodiscard]] const Identifier &section(Slot) const override;
-
-    [[nodiscard]] bool couldTraverse(Slot from, Slot to) const override;
-
-  protected:
-    void print(std::ostream &) const override;
-};
-
-/**
  * A switch with three connected tracks. Switches can have one of three Types:
  * `MOTORIZED`, `PASSIVE` or `FIXED`.
  *
@@ -482,90 +343,142 @@ class ThruNode : public Node {
  * require no controller. For passive switches, straight track choice is
  * arbitrary.
  *
- * `FIXED` switches can be entered from the common track, but will always direct
- * all trains to the same exit. They are usually found at the edges of
+ * `FIXED` switches can only be entered from the common track, and will always
+ * direct all trains to the same exit. They are found at the edges of
  * bidirectional segments. For fixed switches, straight track is the exit for
  * trains entering through common track.
  *
  * (All other switch configurations are invalid on the PRW.)
+ *
  */
-class SwitchNode : public Node {
+using NodeType = const NodeTypeInfo *;
 
-    Identifier m_common;
-    Identifier m_straight;
-    Identifier m_diverging;
+/**
+ * A node connecting two sections of a single track.
+ */
+extern const NodeType THRU;
+
+/**
+ * A motorized switch operated by a routing table.
+ */
+extern const NodeType MOTORIZED;
+
+/**
+ * A switch that cannot be entered from the common track.
+ */
+extern const NodeType PASSIVE;
+
+/**
+ * A switch that is fixed in a single position that can be entered from
+ * the common track.
+ */
+extern const NodeType FIXED;
+
+/**
+ * A level crossing of two tracks.
+ */
+extern const NodeType CROSSING;
+
+/**
+ * A dead end connected to a bidirectional section.
+ */
+extern const NodeType END;
+
+/**
+ * A Node at the joint or intersection of Sections.
+ *
+ * Nodes, as all Model entities, are mutable objects.
+ */
+class Node {
+
+  public:
+    static constexpr size_t MAX_SLOTS = 4;
+
+  private:
+    NodeType m_type;
+    Identifier m_id;
+    Identifier m_slots[MAX_SLOTS];
 
   public:
     /**
-     * Slot of the common track.
+     * Constructs a Node with the given type and ID.
      */
-    static constexpr Slot COMMON = 0;
+    Node(NodeType, Identifier);
 
     /**
-     * Slot of the straight track.
+     * Returns the Type of this Node.
+     *
+     * Node Type determines the role, structure and function of the node. Node
+     * types are more specific than implementing classes, and multiple types can
+     * be implemented by a single class. Use this value to differentiate between
+     * different kinds of nodes.
+     *
+     * @return the Type of this Node
      */
-    static constexpr Slot STRAIGHT = 1;
+    [[nodiscard]] NodeType type() const { return m_type; }
 
     /**
-     * Slot of the diverging track.
+     * Returns the Identifier of this Node.
+     *
+     * @return the ID of this Node
      */
-    static constexpr Slot DIVERGING = 2;
+    [[nodiscard]] const Identifier &id() const { return m_id; }
 
     /**
-     * Constructs a SwitchNode with the given type and ID.
+     * Returns the number of Sections this Node connects.
      *
-     * Type must be one of `MOTORIZED`, `PASSIVE` and `FIXED`.
+     * This value is constant for a given Type.
+     *
+     * @return the number of Sections Nodes of this Type connect
      */
-    SwitchNode(Type, Identifier);
+    [[nodiscard]] SlotId sectionCount() const;
 
     /**
-     * Returns the section ID of the common track.
+     * Returns the ID of the section in the requested slot, `ID_NULL` if the
+     * slot is not yet connected, or `ID_INVALID` if no such slot exists.
      *
-     * Equivalent to `section(0)`.
-     *
-     * @return section ID of the common track or `ID_NULL`
+     * @return the ID of the requested section, `ID_NULL` or `ID_INVALID`
      */
-    [[nodiscard]] const Identifier &common() const { return m_common; }
+    [[nodiscard]] const Identifier &section(SlotId slot) const {
+        return slot > sectionCount() ? ID_INVALID : m_slots[slot];
+    }
 
     /**
-     * Returns the section ID of the straight track.
+     * Determines whether travel from slot `from` to slot `to` would be possible
+     * if appropriate section were connected in these slots.
      *
-     * Equivalent to `section(1)`.
+     * This method must not query actual sections connected, if any.
      *
-     * @return section ID of the straight track or `ID_NULL`
+     * This value is constant for a given (Type, `from`, `to`) tuple. `false` is
+     * returned for invalid slots. Note that most, but not all Nodes will return
+     * `false` when `from == to`.
+     *
+     * @return `true` if and only if there exists a configuration of Sections
+     * that would permit travel from the Section at slot `from` to the Section
+     * at slot `to`
      */
-    [[nodiscard]] const Identifier &straight() const { return m_straight; }
+    [[nodiscard]] bool couldTraverse(SlotId from, SlotId to) const;
 
     /**
-     * Returns the section ID of the diverging track.
-     *
-     * Equivalent to `section(2)`.
-     *
-     * @return section ID of the diverging track or `ID_NULL`
+     * Outputs a textual representation of this Node to the `ostream`.
      */
-    [[nodiscard]] const Identifier &diverging() const { return m_diverging; }
-
-    [[nodiscard]] Slot sectionCount() const override { return 3; }
-
-    /**
-     * @copydoc Node::section
-     *
-     * @par Layout of switches
-     *   - 0: common track
-     *   - 1: straight track
-     *   - 2: diverging track
-     *
-     * @see common
-     * @see straight
-     * @see diverging
-     */
-    [[nodiscard]] const Identifier &section(Slot) const override;
-
-    [[nodiscard]] bool couldTraverse(Slot from, Slot to) const override;
-
-  protected:
-    void print(std::ostream &) const override;
+    friend std::ostream &operator<<(std::ostream &, const Node &);
 };
+
+/**
+ * SlotId of the common track.
+ */
+static constexpr SlotId COMMON = 0;
+
+/**
+ * SlotId of the straight track.
+ */
+static constexpr SlotId STRAIGHT = 1;
+
+/**
+ * SlotId of the diverging track.
+ */
+static constexpr SlotId DIVERGING = 2;
 
 /**
  * A Section connecting exactly two Nodes.

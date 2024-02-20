@@ -113,8 +113,8 @@ Model::RemoveResult Model::removeSection(const Identifier &id) {
 }
 
 Model::LinkResult Model::link(const Identifier &sectionId,
-                              const Identifier &startNodeId, Slot startSlot,
-                              const Identifier &endNodeId, Slot endSlot) {
+                              const Identifier &startNodeId, SlotId startSlot,
+                              const Identifier &endNodeId, SlotId endSlot) {
 
     const Section *section = this->section(sectionId);
     const Node *start = this->node(startNodeId);
@@ -154,63 +154,23 @@ const Section *Model::section(const Identifier &id) {
     return it == m_sections.end() ? nullptr : it->second.get();
 }
 
-ThruNode::ThruNode(const Identifier &id) : Node(Type::THRU, id) {
-    m_sections[0] = ID_NULL;
-    m_sections[1] = ID_NULL;
-}
+struct NodeTypeInfo {
+    const char *name = {};
+    size_t slotCount = {};
+    bool allowedRoutes[Node::MAX_SLOTS][Node::MAX_SLOTS] = {};
+};
 
-const Identifier &ThruNode::section(size_t index) const {
-    if (index > 2) {
-        return ID_INVALID;
-    }
-    return m_sections[index];
-}
+Node::Node(NodeType type, Identifier id)
+    : m_type(type), m_id(std::move(id)), m_slots{} {}
 
-bool ThruNode::couldTraverse(size_t from, size_t to) const {
-    return (from == 0 && to == 1) || (from == 1 && to == 0);
-}
+SlotId Node::sectionCount() const { return type()->slotCount; };
 
-SwitchNode::SwitchNode(Type type, Identifier id)
-    : Node(type, std::move(id)), m_common(ID_NULL), m_straight(ID_NULL),
-      m_diverging(ID_NULL) {
-#ifdef DEBUG
-    switch (type) {
-    case Type::MOTORIZED:
-    case Type::PASSIVE:
-    case Type::FIXED:
-        break;
-    default:
-        throw std::invalid_argument("Illegal SwitchNode type");
-    }
-#endif
-}
-
-const Identifier &SwitchNode::section(size_t index) const {
-    switch (index) {
-    case 0:
-        return m_common;
-    case 1:
-        return m_straight;
-    case 2:
-        return m_diverging;
-    default:
-        return ID_INVALID;
-    }
-}
-
-bool SwitchNode::couldTraverse(size_t from, size_t to) const {
-    if (from == to || from > 2 || to > 2) {
+bool Node::couldTraverse(SlotId from, SlotId to) const {
+    const auto &type = *this->type();
+    if (from >= type.slotCount || to >= type.slotCount) {
         return false;
     }
-
-    switch (type()) {
-    case Type::MOTORIZED:
-        return to == 0;
-    case Type::PASSIVE:
-        return from == 0;
-    default:
-        return to == 0 || (from == 0 && to == 1);
-    }
+    return type.allowedRoutes[from][to];
 }
 
 Section::Section(Identifier id, bool isBidir, Length length,
@@ -229,38 +189,80 @@ const char *fmt(const Identifier &id) {
 } // namespace
 
 std::ostream &operator<<(std::ostream &out, const Node &node) {
-    node.print(out);
+    const auto &type = *node.type();
+
+    out << '[' << type.name << " node " << node.id() << ' ';
+
+    out << fmt(node.section(0));
+    for (SlotId i = 1; i < type.slotCount; i++) {
+        out << '/' << fmt(node.section(i));
+    }
+
+    out << ']';
+
     return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const Section &section) {
-    out << fmt(section.id()) << " [Section; " << fmt(section.start()) << ", "
-        << fmt(section.end()) << "]";
+    out << "[Section " << section.id() << ' ' << fmt(section.start()) << '/'
+        << fmt(section.end()) << ']';
     return out;
 }
 
-void ThruNode::print(std::ostream &out) const {
-    out << id() << " [THRU; " << fmt(section(0)) << ", " << fmt(section(1))
-        << "]";
-}
-
-void SwitchNode::print(std::ostream &out) const {
-    out << id();
-
-    switch (type()) {
-    case Type::MOTORIZED:
-        out << " [MOTORIZED; ";
-        break;
-    case Type::PASSIVE:
-        out << " [PASSIVE; ";
-        break;
-    default:
-        out << " [PASSIVE; ";
-        break;
+// clang-format off
+static constexpr NodeTypeInfo THRU_INFO {
+    "THRU", 2,
+    {
+        // 0 <-> 1
+        { false, true,  },
+        { true,  false, },
     }
+};
+extern const NodeType THRU = &THRU_INFO;
 
-    out << "C/S/D: " << fmt(common()) << ", " << fmt(straight()) << ", "
-        << fmt(diverging()) << "]";
-}
+static constexpr NodeTypeInfo MOTORIZED_INFO {
+    "MOTORIZED", 3,
+    {
+        // 0 -> 1, 0 -> 2
+        { false, true,  true,  },
+        { false, false, false, },
+        { false, false, false, },
+    }
+};
+extern const NodeType MOTORIZED = &MOTORIZED_INFO;
+
+static constexpr NodeTypeInfo PASSIVE_INFO {
+    "PASSIVE", 3,
+    {
+        // 1 -> 0, 2 -> 0
+        { false, false, false, },
+        { true,  false, false, },
+        { true,  false, false, },
+    }
+};
+extern const NodeType PASSIVE = &PASSIVE_INFO;
+
+static constexpr NodeTypeInfo FIXED_INFO {
+    "FIXED", 3,
+    {
+        // 0 -> 1, 2 -> 0
+        { false, true,  false, },
+        { false, false, false, },
+        { true,  false, false, },
+    }
+};
+extern const NodeType FIXED = &FIXED_INFO;
+
+// TODO design and implement CROSSING nodes
+extern const NodeType CROSSING = nullptr;
+
+static constexpr NodeTypeInfo END_INFO {
+    "END", 1,
+    {
+        { false, },
+    }
+};
+extern const NodeType END = &END_INFO;
+// clang-format on
 
 } // namespace piwcs::prw

@@ -16,29 +16,6 @@ TEST(Identifiers, Validators) {
     EXPECT_FALSE(isId(ID_INVALID));
 }
 
-/**
- * A Node that has non-null connections.
- */
-class ConnectedNode : public Node {
-    Identifier m_section;
-
-  public:
-    ConnectedNode(const Identifier &id)
-        : Node(static_cast<Node::Type>(127), id), m_section("") {}
-
-    size_t sectionCount() const { return 1; }
-
-    const Identifier &section(size_t i) const {
-        return i == 0 ? m_section : ID_NULL;
-    }
-
-    void setSection(const Identifier &section) { m_section = section; }
-
-    bool couldTraverse(size_t from, size_t to) const { return true; }
-
-    void print(std::ostream &s) const { s << "Test ConnectedNode " << id(); }
-};
-
 TEST(Model, Constructor) {
     Model model;
 
@@ -49,25 +26,19 @@ TEST(Model, Constructor) {
 TEST(Model, AddNode) {
     Model model;
 
-    auto res = model.addNode(std::make_unique<ThruNode>("123"));
+    auto res = model.addNode(std::make_unique<Node>(THRU, "123"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.nodes().size(), 1);
 
-    res = model.addNode(std::make_unique<ThruNode>(ID_INVALID));
+    res = model.addNode(std::make_unique<Node>(THRU, ID_INVALID));
     EXPECT_EQ(res, Model::AddResult::BAD_ID);
     EXPECT_EQ(model.nodes().size(), 1);
 
-    res = model.addNode(std::make_unique<ThruNode>("123"));
+    res = model.addNode(std::make_unique<Node>(THRU, "123"));
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.nodes().size(), 1);
 
-    auto connected = std::make_unique<ConnectedNode>("456");
-    connected->setSection("555");
-    res = model.addNode(std::move(connected));
-    EXPECT_EQ(res, Model::AddResult::HAS_REF);
-    EXPECT_EQ(model.nodes().size(), 1);
-
-    res = model.addNode(std::make_unique<ThruNode>("456"));
+    res = model.addNode(std::make_unique<Node>(THRU, "456"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.nodes().size(), 2);
 }
@@ -75,8 +46,8 @@ TEST(Model, AddNode) {
 TEST(Model, FindNode) {
     Model model;
 
-    model.addNode(std::make_unique<ThruNode>("123"));
-    model.addNode(std::make_unique<ThruNode>("456"));
+    model.addNode(std::make_unique<Node>(THRU, "123"));
+    model.addNode(std::make_unique<Node>(THRU, "456"));
 
     const Node *node = model.node("123");
     EXPECT_NE(node, nullptr);
@@ -89,7 +60,7 @@ TEST(Model, FindNode) {
 TEST(Model, RemoveNode) {
     Model model;
 
-    model.addNode(std::make_unique<ThruNode>("123"));
+    model.addNode(std::make_unique<Node>(THRU, "123"));
 
     auto res = model.removeNode("000");
     EXPECT_EQ(res, Model::RemoveResult::NOT_FOUND);
@@ -98,17 +69,6 @@ TEST(Model, RemoveNode) {
     res = model.removeNode("123");
     EXPECT_EQ(res, Model::RemoveResult::OK);
     EXPECT_TRUE(model.nodes().empty());
-
-    // Hack in a node that has connections
-    // N.B.: this part of the test is rather white box-y, may break on refactor
-    auto connected = std::make_unique<ConnectedNode>("456");
-    auto sneaky = connected.get();
-    model.addNode(std::move(connected));
-    sneaky->setSection("555");
-
-    res = model.removeNode("456");
-    EXPECT_EQ(res, Model::RemoveResult::REFERENCED);
-    EXPECT_FALSE(model.nodes().empty());
 }
 
 TEST(Model, AddSection) {
@@ -125,9 +85,6 @@ TEST(Model, AddSection) {
     res = model.addSection(std::make_unique<Section>("123", false));
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 1);
-
-    // N.B.: there isn't a good way to force AddResult::HAS_REF at this point in
-    // unit tests, so this will get covered in more advanced tests
 
     res = model.addSection(std::make_unique<Section>("456", false));
     EXPECT_EQ(res, Model::AddResult::OK);
