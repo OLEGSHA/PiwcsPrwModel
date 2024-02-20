@@ -12,47 +12,47 @@ bool isId(const Identifier &id) { return !id.empty() && id[0] != '#'; }
 
 bool isIdOrNull(const Identifier &id) { return id.empty() || isId(id); }
 
-Model::AddResult Model::addNode(std::unique_ptr<Node> node) {
+Model::AddResult Model::addNode(Node node) {
 
     // Check ID
-    if (!isId(node->id())) {
+    if (!isId(node.id())) {
         return AddResult::BAD_ID;
     }
 
     // Check for duplicate IDs
-    if (this->node(node->id()) != nullptr) {
+    if (this->node(node.id()) != nullptr) {
         return AddResult::DUPLICATE;
     }
 
     // Check for non-null section IDs
-    size_t count = node->sectionCount();
+    size_t count = node.sectionCount();
     for (size_t i = 0; i < count; i++) {
-        if (isId(node->section(i))) {
+        if (isId(node.section(i))) {
             return AddResult::HAS_REF;
         }
     }
 
-    m_nodes[node->id()] = std::move(node);
+    m_nodes.emplace(node.id(), std::move(node));
     return AddResult::OK;
 }
 
-Model::AddResult Model::addSection(std::unique_ptr<Section> section) {
+Model::AddResult Model::addSection(Section section) {
 
     // Check ID
-    if (!isId(section->id())) {
+    if (!isId(section.id())) {
         return AddResult::BAD_ID;
     }
 
     // Check for duplicate IDs
-    if (this->section(section->id()) != nullptr) {
+    if (this->section(section.id()) != nullptr) {
         return AddResult::DUPLICATE;
     }
 
     // Check for duplicate destination address
-    if (section->isDestination()) {
-        const auto &address = section->destination()->address();
+    if (section.isDestination()) {
+        const auto &address = section.destination()->address();
         for (const auto &it : sections()) {
-            const auto &otherSection = *it.second;
+            const auto &otherSection = it.second;
             if (otherSection.isDestination() &&
                 otherSection.destination()->address() == address) {
                 return AddResult::DUPLICATE;
@@ -61,11 +61,11 @@ Model::AddResult Model::addSection(std::unique_ptr<Section> section) {
     }
 
     // Check for non-null node IDs
-    if (isId(section->start()) || isId(section->end())) {
+    if (isId(section.start()) || isId(section.end())) {
         return AddResult::HAS_REF;
     }
 
-    m_sections[section->id()] = std::move(section);
+    m_sections.emplace(section.id(), std::move(section));
     return AddResult::OK;
 }
 
@@ -77,7 +77,7 @@ Model::RemoveResult Model::removeNode(const Identifier &id) {
         return RemoveResult::NOT_FOUND;
     }
 
-    const Node &node = *it->second;
+    const Node &node = it->second;
 
     // Check for non-null section IDs
     // This is equivalent to searching for references to node but much faster
@@ -100,7 +100,7 @@ Model::RemoveResult Model::removeSection(const Identifier &id) {
         return RemoveResult::NOT_FOUND;
     }
 
-    const Section &section = *it->second;
+    const Section &section = it->second;
 
     // Check for non-null section IDs
     // This is equivalent to searching for references to section but much faster
@@ -146,12 +146,12 @@ Model::LinkResult Model::link(const Identifier &sectionId,
 
 const Node *Model::node(const Identifier &id) {
     auto it = m_nodes.find(id);
-    return it == m_nodes.end() ? nullptr : it->second.get();
+    return it == m_nodes.end() ? nullptr : &it->second;
 }
 
 const Section *Model::section(const Identifier &id) {
     auto it = m_sections.find(id);
-    return it == m_sections.end() ? nullptr : it->second.get();
+    return it == m_sections.end() ? nullptr : &it->second;
 }
 
 struct NodeTypeInfo {

@@ -26,19 +26,19 @@ TEST(Model, Constructor) {
 TEST(Model, AddNode) {
     Model model;
 
-    auto res = model.addNode(std::make_unique<Node>(THRU, "123"));
+    auto res = model.addNode(Node(THRU, "123"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.nodes().size(), 1);
 
-    res = model.addNode(std::make_unique<Node>(THRU, ID_INVALID));
+    res = model.addNode(Node(THRU, ID_INVALID));
     EXPECT_EQ(res, Model::AddResult::BAD_ID);
     EXPECT_EQ(model.nodes().size(), 1);
 
-    res = model.addNode(std::make_unique<Node>(THRU, "123"));
+    res = model.addNode(Node(THRU, "123"));
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.nodes().size(), 1);
 
-    res = model.addNode(std::make_unique<Node>(THRU, "456"));
+    res = model.addNode(Node(THRU, "456"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.nodes().size(), 2);
 }
@@ -46,8 +46,8 @@ TEST(Model, AddNode) {
 TEST(Model, FindNode) {
     Model model;
 
-    model.addNode(std::make_unique<Node>(THRU, "123"));
-    model.addNode(std::make_unique<Node>(THRU, "456"));
+    model.addNode(Node(THRU, "123"));
+    model.addNode(Node(THRU, "456"));
 
     const Node *node = model.node("123");
     EXPECT_NE(node, nullptr);
@@ -60,7 +60,7 @@ TEST(Model, FindNode) {
 TEST(Model, RemoveNode) {
     Model model;
 
-    model.addNode(std::make_unique<Node>(THRU, "123"));
+    model.addNode(Node(THRU, "123"));
 
     auto res = model.removeNode("000");
     EXPECT_EQ(res, Model::RemoveResult::NOT_FOUND);
@@ -74,19 +74,19 @@ TEST(Model, RemoveNode) {
 TEST(Model, AddSection) {
     Model model;
 
-    auto res = model.addSection(std::make_unique<Section>("123", false));
+    auto res = model.addSection(Section("123", false));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.addSection(std::make_unique<Section>(ID_INVALID, false));
+    res = model.addSection(Section(ID_INVALID, false));
     EXPECT_EQ(res, Model::AddResult::BAD_ID);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.addSection(std::make_unique<Section>("123", false));
+    res = model.addSection(Section("123", false));
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.addSection(std::make_unique<Section>("456", false));
+    res = model.addSection(Section("456", false));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 2);
 }
@@ -94,17 +94,17 @@ TEST(Model, AddSection) {
 TEST(Model, AddSectionWithDestination) {
     Model model;
 
-    auto res = model.addSection(std::make_unique<Section>(
+    auto res = model.addSection(Section(
         "123", false, 0, std::make_unique<Destination>("1.0.0", "Name1")));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.addSection(std::make_unique<Section>(
+    res = model.addSection(Section(
         "456", false, 0, std::make_unique<Destination>("1.0.1", "Name1")));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 2);
 
-    res = model.addSection(std::make_unique<Section>(
+    res = model.addSection(Section(
         "789", false, 0, std::make_unique<Destination>("1.0.1", "Name1")));
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 2);
@@ -113,8 +113,8 @@ TEST(Model, AddSectionWithDestination) {
 TEST(Model, FindSection) {
     Model model;
 
-    model.addSection(std::make_unique<Section>("123", false));
-    model.addSection(std::make_unique<Section>("456", false));
+    model.addSection(Section("123", false));
+    model.addSection(Section("456", false));
 
     const Section *section = model.section("123");
     EXPECT_NE(section, nullptr);
@@ -127,7 +127,7 @@ TEST(Model, FindSection) {
 TEST(Model, RemoveSection) {
     Model model;
 
-    model.addSection(std::make_unique<Section>("123", false));
+    model.addSection(Section("123", false));
 
     auto res = model.removeSection("000");
     EXPECT_EQ(res, Model::RemoveResult::NOT_FOUND);

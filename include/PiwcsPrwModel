@@ -78,7 +78,6 @@ class Destination;
  * _complete_.
  *
  * @par Class-enforced invariants
- *   - All `unique_ptr`'s are not empty
  *   - Node identifiers are valid, non-null and globally unique
  *   - Section identifiers are valid, non-null and globally unique
  *   - All identifier slots are either empty or contain IDs of known entities
@@ -88,20 +87,19 @@ class Destination;
  */
 class Model {
 
-    std::unordered_map<Identifier, std::unique_ptr<Node>> m_nodes;
-    std::unordered_map<Identifier, std::unique_ptr<Section>> m_sections;
+    std::unordered_map<Identifier, Node> m_nodes;
+    std::unordered_map<Identifier, Section> m_sections;
 
   public:
     /**
      * Provides access to the internal mapping of IDs to all Nodes.
      *
      * The returned reference is valid as long as this Model object exists, and
-     * its contents update dynamically as this Model object changes. All
-     * `unique_ptr`'s are not empty.
+     * its contents update dynamically as this Model object changes.
      *
      * @return a mapping of IDs to Nodes
      */
-    const std::unordered_map<Identifier, std::unique_ptr<Node>> &nodes() const {
+    const std::unordered_map<Identifier, Node> &nodes() const {
         return m_nodes;
     }
 
@@ -109,13 +107,11 @@ class Model {
      * Provides access to the internal mapping of IDs to all Sections.
      *
      * The returned reference is valid as long as this Model object exists, and
-     * its contents update dynamically as this Model object changes. All
-     * `unique_ptr`'s are not empty.
+     * its contents update dynamically as this Model object changes.
      *
      * @return a mapping of IDs to Sections
      */
-    const std::unordered_map<Identifier, std::unique_ptr<Section>> &
-    sections() const {
+    const std::unordered_map<Identifier, Section> &sections() const {
         return m_sections;
     }
 
@@ -153,13 +149,11 @@ class Model {
      * (`DUPLICATE`), or if the node references any entities (`HAS_REF`). Should
      * addition fail, all objects remain valid and no change is made.
      *
-     * The `unique_ptr` must not be empty.
-     *
      * @param node the Node to add
      *
      * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
      */
-    AddResult addNode(std::unique_ptr<Node> node);
+    AddResult addNode(Node node);
 
     /**
      * Adds an existing Section to the model.
@@ -170,13 +164,11 @@ class Model {
      * references any entities (`HAS_REF`). Should addition fail, all objects
      * remain valid and no change is made.
      *
-     * The `unique_ptr` must not be empty.
-     *
      * @param node the Section to add
      *
      * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
      */
-    AddResult addSection(std::unique_ptr<Section> section);
+    AddResult addSection(Section section);
 
     /**
      * Possible return values of `remove*` methods.
