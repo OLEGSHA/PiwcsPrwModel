@@ -1,5 +1,9 @@
 add_library(piwcsprwmodel
-    data_model.cpp
+    model.cpp
+    nodes.cpp
+    section.cpp
+    util.cpp
+    printing.cpp
     io.cpp
 )
 
