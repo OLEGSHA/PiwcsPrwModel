@@ -136,7 +136,113 @@ TEST(Model, RemoveSection) {
     res = model.removeSection("123");
     EXPECT_EQ(res, Model::RemoveResult::OK);
     EXPECT_TRUE(model.sections().empty());
+}
 
-    // N.B.: there isn't a good way to force RemoveResult::REFERENCED at this
-    // point in unit tests, so this will get covered in more advanced tests
+TEST(Model, Link) {
+    Model model;
+    EXPECT_TRUE(!!model.addSection(Section("s1", false)));
+    EXPECT_TRUE(!!model.addSection(Section("s2", false)));
+    EXPECT_TRUE(!!model.addNode(Node(THRU, "n1")));
+    EXPECT_TRUE(!!model.addNode(Node(THRU, "n2")));
+    auto s1 = model.section("s1");
+    auto s2 = model.section("s2");
+    auto n1 = model.node("n1");
+    auto n2 = model.node("n2");
+
+    auto checkStatusQuo = [&]() {
+        EXPECT_EQ(n1->section(0), s1->id());
+        EXPECT_EQ(n1->section(1), ID_NULL);
+        EXPECT_EQ(n2->section(0), ID_NULL);
+        EXPECT_EQ(n2->section(1), s1->id());
+        EXPECT_EQ(s1->start(), n1->id());
+        EXPECT_EQ(s1->end(), n2->id());
+        EXPECT_EQ(s2->start(), ID_NULL);
+        EXPECT_EQ(s2->end(), ID_NULL);
+    };
+
+    // OK
+    auto res = model.link("s1", "n1", 0, "n2", 1);
+    EXPECT_EQ(res, Model::LinkResult::OK);
+    checkStatusQuo();
+
+    // s9 does not exist
+    res = model.link("s9", "n1", 1, "n2", 0);
+    EXPECT_EQ(res, Model::LinkResult::NOT_FOUND);
+    checkStatusQuo();
+
+    // n9 does not exist
+    res = model.link("s2", "n9", 1, "n2", 0);
+    EXPECT_EQ(res, Model::LinkResult::NOT_FOUND);
+    checkStatusQuo();
+
+    // n1.9 does not exist
+    res = model.link("s2", "n1", 9, "n2", 0);
+    EXPECT_EQ(res, Model::LinkResult::NOT_FOUND);
+    checkStatusQuo();
+
+    // n9 does not exist
+    res = model.link("s2", "n1", 1, "n9", 0);
+    EXPECT_EQ(res, Model::LinkResult::NOT_FOUND);
+    checkStatusQuo();
+
+    // n2.9 does not exist
+    res = model.link("s2", "n1", 1, "n2", 9);
+    EXPECT_EQ(res, Model::LinkResult::NOT_FOUND);
+    checkStatusQuo();
+
+    // start occupied
+    res = model.link("s2", "n1", 0, "n2", 0);
+    EXPECT_EQ(res, Model::LinkResult::NODE_OCCUPIED);
+    checkStatusQuo();
+
+    // end occupied
+    res = model.link("s2", "n1", 1, "n2", 1);
+    EXPECT_EQ(res, Model::LinkResult::NODE_OCCUPIED);
+    checkStatusQuo();
+
+    // section occupied
+    res = model.link("s1", "n1", 1, "n2", 0);
+    EXPECT_EQ(res, Model::LinkResult::SECTION_OCCUPIED);
+    checkStatusQuo();
+
+    // start == end
+    res = model.link("s2", "n1", 1, "n1", 1);
+    EXPECT_EQ(res, Model::LinkResult::SAME_SLOT);
+    checkStatusQuo();
+}
+
+TEST(Model, RemoveLinked) {
+    Model model;
+    EXPECT_TRUE(!!model.addSection(Section("s1", false)));
+    EXPECT_TRUE(!!model.addNode(Node(THRU, "n1")));
+    EXPECT_TRUE(!!model.addNode(Node(THRU, "n2")));
+    EXPECT_TRUE(!!model.link("s1", "n1", 0, "n2", 1));
+    auto s1 = model.section("s1");
+    auto n1 = model.node("n1");
+    auto n2 = model.node("n2");
+
+    auto checkStatusQuo = [&]() {
+        EXPECT_NE(model.section("s1"), nullptr);
+        EXPECT_NE(model.node("n1"), nullptr);
+        EXPECT_NE(model.node("n2"), nullptr);
+        EXPECT_EQ(n1->section(0), s1->id());
+        EXPECT_EQ(n1->section(1), ID_NULL);
+        EXPECT_EQ(n2->section(0), ID_NULL);
+        EXPECT_EQ(n2->section(1), s1->id());
+        EXPECT_EQ(s1->start(), n1->id());
+        EXPECT_EQ(s1->end(), n2->id());
+    };
+    checkStatusQuo();
+
+    auto res = model.removeNode("n1");
+    EXPECT_EQ(res, Model::RemoveResult::REFERENCED);
+    checkStatusQuo();
+
+    res = model.removeNode("n2");
+    EXPECT_EQ(res, Model::RemoveResult::REFERENCED);
+    checkStatusQuo();
+
+    res = model.removeSection("s1");
+    EXPECT_EQ(res, Model::RemoveResult::REFERENCED);
+    checkStatusQuo();
 }

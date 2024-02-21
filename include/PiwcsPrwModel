@@ -283,7 +283,7 @@ class Model {
      *
      * @return a raw pointer to the Node, or `nullptr` if none found
      */
-    const Node *node(const Identifier &id);
+    const Node *node(const Identifier &id) const;
 
     /**
      * Searches for a Section with the given ID.
@@ -295,7 +295,31 @@ class Model {
      *
      * @return a raw pointer to the Section, or `nullptr` if none found
      */
-    const Section *section(const Identifier &id);
+    const Section *section(const Identifier &id) const;
+
+    /**
+     * Searches for a Node with the given ID.
+     *
+     * The returned pointer is valid until a change is made to this Model
+     * object.
+     *
+     * @param id the ID of the Node to find
+     *
+     * @return a raw pointer to the Node, or `nullptr` if none found
+     */
+    Node *node(const Identifier &id);
+
+    /**
+     * Searches for a Section with the given ID.
+     *
+     * The returned pointer is valid until a change is made to this Model
+     * object.
+     *
+     * @param id the ID of the Section to find
+     *
+     * @return a raw pointer to the Section, or `nullptr` if none found
+     */
+    Section *section(const Identifier &id);
 };
 
 struct NodeTypeInfo;
@@ -455,6 +479,9 @@ class Node {
      * Outputs a textual representation of this Node to the `ostream`.
      */
     friend std::ostream &operator<<(std::ostream &, const Node &);
+
+    friend Model::LinkResult Model::link(const Identifier &, const Identifier &,
+                                         SlotId, const Identifier &, SlotId);
 };
 
 /**
@@ -619,6 +646,9 @@ class Section {
      * Outputs a textual representation of this Section to the `ostream`.
      */
     friend std::ostream &operator<<(std::ostream &, const Section &);
+
+    friend Model::LinkResult Model::link(const Identifier &, const Identifier &,
+                                         SlotId, const Identifier &, SlotId);
 };
 
 /**
@@ -743,6 +773,16 @@ void writeModel(std::ostream &out, const Model &model);
  * @param model the Model to serialize
  */
 void writeModel(const std::string &filename, const Model &model);
+
+inline bool operator!(Model::AddResult r) { return r != Model::AddResult::OK; }
+
+inline bool operator!(Model::RemoveResult r) {
+    return r != Model::RemoveResult::OK;
+}
+
+inline bool operator!(Model::LinkResult r) {
+    return r != Model::LinkResult::OK;
+}
 
 } // namespace piwcs::prw
 

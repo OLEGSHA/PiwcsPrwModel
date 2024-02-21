@@ -116,9 +116,9 @@ Model::LinkResult Model::link(const Identifier &sectionId,
                               const Identifier &startNodeId, SlotId startSlot,
                               const Identifier &endNodeId, SlotId endSlot) {
 
-    const Section *section = this->section(sectionId);
-    const Node *start = this->node(startNodeId);
-    const Node *end = this->node(endNodeId);
+    Section *section = this->section(sectionId);
+    Node *start = this->node(startNodeId);
+    Node *end = this->node(endNodeId);
 
     if (section == nullptr || start == nullptr || end == nullptr ||
         startSlot >= start->sectionCount() || endSlot >= end->sectionCount()) {
@@ -139,17 +139,30 @@ Model::LinkResult Model::link(const Identifier &sectionId,
         return LinkResult::SECTION_OCCUPIED;
     }
 
-    // TODO implement
+    start->m_slots[startSlot] = sectionId;
+    end->m_slots[endSlot] = sectionId;
+    section->m_start = startNodeId;
+    section->m_end = endNodeId;
 
     return LinkResult::OK;
 }
 
-const Node *Model::node(const Identifier &id) {
+const Node *Model::node(const Identifier &id) const {
     auto it = m_nodes.find(id);
     return it == m_nodes.end() ? nullptr : &it->second;
 }
 
-const Section *Model::section(const Identifier &id) {
+const Section *Model::section(const Identifier &id) const {
+    auto it = m_sections.find(id);
+    return it == m_sections.end() ? nullptr : &it->second;
+}
+
+Node *Model::node(const Identifier &id) {
+    auto it = m_nodes.find(id);
+    return it == m_nodes.end() ? nullptr : &it->second;
+}
+
+Section *Model::section(const Identifier &id) {
     auto it = m_sections.find(id);
     return it == m_sections.end() ? nullptr : &it->second;
 }
