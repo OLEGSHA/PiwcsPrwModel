@@ -1,7 +1,7 @@
-#ifndef NODES_H
-#define NODES_H
+#ifndef NODETYPEINFO_H
+#define NODETYPEINFO_H
 
-#include <PiwcsPrwModel>
+#include <piwcsprwmodel/nodes.h>
 
 namespace piwcs::prw {
 
@@ -13,4 +13,4 @@ struct NodeTypeInfo {
 
 } // namespace piwcs::prw
 
-#endif
+#endif // NODETYPEINFO_H

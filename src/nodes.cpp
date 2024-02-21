@@ -1,6 +1,6 @@
-#include <PiwcsPrwModel>
+#include <piwcsprwmodel/nodes.h>
 
-#include "nodes.h"
+#include "nodetypeinfo.h"
 
 namespace piwcs::prw {
 

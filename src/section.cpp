@@ -1,4 +1,4 @@
-#include <PiwcsPrwModel>
+#include <piwcsprwmodel/section.h>
 
 namespace piwcs::prw {
 

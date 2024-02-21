@@ -1,4 +1,6 @@
-#include <PiwcsPrwModel>
+#include <piwcsprwmodel/model.h>
+#include <piwcsprwmodel/nodes.h>
+#include <piwcsprwmodel/section.h>
 
 namespace piwcs::prw {
 

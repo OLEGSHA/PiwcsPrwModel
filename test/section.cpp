@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <PiwcsPrwModel>
+#include <piwcsprwmodel.h>
 
 using namespace piwcs::prw;
 

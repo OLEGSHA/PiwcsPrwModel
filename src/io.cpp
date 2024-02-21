@@ -1,4 +1,4 @@
-#include <PiwcsPrwModel>
+#include <piwcsprwmodel/io.h>
 
 #include <fstream>
 #include <iostream>
