@@ -1,4 +1,8 @@
-HeaderFilterRegex: "include/.*|src/.*|printer/.*|test/.*"
+# Include headers in directories 'include', 'src', 'printer' and 'test'
+# The (/[^./][^/]*)+ matches all reasonable header/directory names, but does not
+# match '..', so e.g. 'xxx/src/../lib/yyy.h' won't match
+# Note: do not indent - this will break the regex
+HeaderFilterRegex: "/(include|src|printer|test)(/[^./][^/]*)+$"
 
 Checks: "-*,\
   clang-analyzer-*,\

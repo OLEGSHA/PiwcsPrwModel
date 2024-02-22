@@ -28,17 +28,27 @@ class IllegalModelError : public std::runtime_error {
 };
 
 /**
+ * Reports that `readModel` could not parse input.
+ */
+class InvalidFormatError : public std::runtime_error {
+  public:
+    InvalidFormatError(const std::string &what_arg)
+        : std::runtime_error(what_arg) {}
+    InvalidFormatError(const char *what_arg) : std::runtime_error(what_arg) {}
+};
+
+/**
  * Reads a PRW model definition from the provided `istream`, constructs a new
  * Model object and returns it.
  *
  * Note that this function does not guarantee that the resulting Model is
  * complete, only that it is consistent.
  *
- * @exception std::ios_base::failure if an IO error occurs or if data is
- * formatted incorrectly
+ * @exception std::ios_base::failure if an IO error occurs
+ * @exception InvalidFormatError if input could not be parsed
  * @exception IllegalModelError if the data describes an inconsistent Model
  *
- * @param in an input stream open in binary mode to read the definition from
+ * @param in an input stream open in text mode to read the definition from
  *
  * @return the Model desribed by the data in `in`
  */
@@ -51,8 +61,8 @@ Model readModel(std::istream &in);
  * Note that this function does not guarantee that the resulting Model is
  * complete, only that it is consistent.
  *
- * @exception std::ios_base::failure if an IO error occurs or if data is
- * formatted incorrectly
+ * @exception std::ios_base::failure if an IO error occurs
+ * @exception InvalidFormatError if input could not be parsed
  * @exception IllegalModelError if the data describes an inconsistent Model
  *
  * @param filename the relative path of the file to read
@@ -66,7 +76,7 @@ Model readModel(const std::string &filename);
  *
  * @exception std::ios_base::failure if an IO error occurs
  *
- * @param out an output stream open in binary mode to write the definition to
+ * @param out an output stream open in text mode to write the definition to
  * @param model the Model to serialize
  */
 void writeModel(std::ostream &out, const Model &model);

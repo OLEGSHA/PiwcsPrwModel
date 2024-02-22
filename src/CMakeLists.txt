@@ -4,7 +4,9 @@ add_library(piwcsprwmodel
     section.cpp
     util.cpp
     printing.cpp
-    io.cpp
+    io_read.cpp
+    io_write.cpp
 )
 
 target_include_directories(piwcsprwmodel PUBLIC ../include)
+target_include_directories(piwcsprwmodel PRIVATE ../lib)
