@@ -54,7 +54,7 @@ class Section {
      *
      * @return the ID of this section
      */
-    [[nodiscard]] const Identifier &id() const { return m_id; }
+    [[nodiscard]] IdRef id() const { return m_id; }
 
     /**
      * Returns the ID of the Node at the start of this Section.
@@ -63,7 +63,7 @@ class Section {
      *
      * @return the ID of the start Node or `ID_NULL`
      */
-    [[nodiscard]] const Identifier &start() const { return m_start; }
+    [[nodiscard]] IdRef start() const { return m_start; }
 
     /**
      * Returns the ID of the Node at the end of this Section.
@@ -72,7 +72,7 @@ class Section {
      *
      * @return the ID of the end Node or `ID_NULL`
      */
-    [[nodiscard]] const Identifier &end() const { return m_end; }
+    [[nodiscard]] IdRef end() const { return m_end; }
 
     /**
      * Returns `true` iff the Section is bidirectional, i.e. allows travel from
@@ -94,7 +94,7 @@ class Section {
      * @return the ID of the Node in the slot with index `index`, `ID_NULL` if
      * the slot is empty, or `ID_INVALID` if the slot does not exist
      */
-    [[nodiscard]] const Identifier &node(size_t index) const {
+    [[nodiscard]] IdRef node(size_t index) const {
         switch (index) {
         case 0:
             return start();

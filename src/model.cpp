@@ -61,9 +61,10 @@ Model::AddResult Model::addSection(Section section) {
     return AddResult::OK;
 }
 
-Model::RemoveResult Model::removeNode(const Identifier &id) {
+Model::RemoveResult Model::removeNode(IdRef id) {
 
-    auto it = m_nodes.find(id);
+    // FIXME prevent copying
+    auto it = m_nodes.find(std::string(id));
 
     if (it == m_nodes.end()) {
         return RemoveResult::NOT_FOUND;
@@ -84,9 +85,10 @@ Model::RemoveResult Model::removeNode(const Identifier &id) {
     return RemoveResult::OK;
 }
 
-Model::RemoveResult Model::removeSection(const Identifier &id) {
+Model::RemoveResult Model::removeSection(IdRef id) {
 
-    auto it = m_sections.find(id);
+    // FIXME prevent copying
+    auto it = m_sections.find(std::string(id));
 
     if (it == m_sections.end()) {
         return RemoveResult::NOT_FOUND;
@@ -104,9 +106,9 @@ Model::RemoveResult Model::removeSection(const Identifier &id) {
     return RemoveResult::OK;
 }
 
-Model::LinkResult Model::link(const Identifier &sectionId,
-                              const Identifier &startNodeId, SlotId startSlot,
-                              const Identifier &endNodeId, SlotId endSlot) {
+Model::LinkResult Model::link(IdRef sectionId, IdRef startNodeId,
+                              SlotId startSlot, IdRef endNodeId,
+                              SlotId endSlot) {
 
     Section *section = this->section(sectionId);
     Node *start = this->node(startNodeId);
@@ -139,23 +141,27 @@ Model::LinkResult Model::link(const Identifier &sectionId,
     return LinkResult::OK;
 }
 
-const Node *Model::node(const Identifier &id) const {
-    auto it = m_nodes.find(id);
+const Node *Model::node(IdRef id) const {
+    // FIXME prevent copying
+    auto it = m_nodes.find(std::string(id));
     return it == m_nodes.end() ? nullptr : &it->second;
 }
 
-const Section *Model::section(const Identifier &id) const {
-    auto it = m_sections.find(id);
+const Section *Model::section(IdRef id) const {
+    // FIXME prevent copying
+    auto it = m_sections.find(std::string(id));
     return it == m_sections.end() ? nullptr : &it->second;
 }
 
-Node *Model::node(const Identifier &id) {
-    auto it = m_nodes.find(id);
+Node *Model::node(IdRef id) {
+    // FIXME prevent copying
+    auto it = m_nodes.find(std::string(id));
     return it == m_nodes.end() ? nullptr : &it->second;
 }
 
-Section *Model::section(const Identifier &id) {
-    auto it = m_sections.find(id);
+Section *Model::section(IdRef id) {
+    // FIXME prevent copying
+    auto it = m_sections.find(std::string(id));
     return it == m_sections.end() ? nullptr : &it->second;
 }
 

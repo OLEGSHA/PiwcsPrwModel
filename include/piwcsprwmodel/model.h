@@ -153,7 +153,7 @@ class Model {
      *
      * @return `OK` upon success, `NOT_FOUND` or `REFERENCED` upon failure
      */
-    RemoveResult removeNode(const Identifier &id);
+    RemoveResult removeNode(IdRef id);
 
     /**
      * Removes a Section from the model.
@@ -167,7 +167,7 @@ class Model {
      *
      * @return `OK` upon success, `NOT_FOUND` or `REFERENCED` upon failure
      */
-    RemoveResult removeSection(const Identifier &id);
+    RemoveResult removeSection(IdRef id);
 
     /**
      * Possible return values of `link` method.
@@ -219,9 +219,8 @@ class Model {
      * @return `OK` upon success, `NOT_FOUND`, `NODE_OCCUPIED`,
      * `SECTION_OCCUPIED` or `SAME_SLOT` upon failure
      */
-    LinkResult link(const Identifier &sectionId, const Identifier &startNodeId,
-                    SlotId startSlotId, const Identifier &endNodeId,
-                    SlotId endSlotId);
+    LinkResult link(IdRef sectionId, IdRef startNodeId, SlotId startSlotId,
+                    IdRef endNodeId, SlotId endSlotId);
 
     /**
      * Searches for a Node with the given ID.
@@ -233,7 +232,7 @@ class Model {
      *
      * @return a raw pointer to the Node, or `nullptr` if none found
      */
-    const Node *node(const Identifier &id) const;
+    const Node *node(IdRef id) const;
 
     /**
      * Searches for a Section with the given ID.
@@ -245,7 +244,7 @@ class Model {
      *
      * @return a raw pointer to the Section, or `nullptr` if none found
      */
-    const Section *section(const Identifier &id) const;
+    const Section *section(IdRef id) const;
 
     /**
      * Searches for a Node with the given ID.
@@ -257,7 +256,7 @@ class Model {
      *
      * @return a raw pointer to the Node, or `nullptr` if none found
      */
-    Node *node(const Identifier &id);
+    Node *node(IdRef id);
 
     /**
      * Searches for a Section with the given ID.
@@ -269,7 +268,7 @@ class Model {
      *
      * @return a raw pointer to the Section, or `nullptr` if none found
      */
-    Section *section(const Identifier &id);
+    Section *section(IdRef id);
 };
 
 inline bool operator!(Model::AddResult r) { return r != Model::AddResult::OK; }
