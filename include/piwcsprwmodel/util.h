@@ -59,6 +59,20 @@ bool isIdOrNull(IdRef);
 bool isId(IdRef);
 
 /**
+ * Allow Identifiers to be hash-transparent with IdRef and `const char *`;
+ */
+struct IdHash {
+    using hash_type = std::hash<std::string_view>;
+    using is_transparent = void;
+
+    std::size_t operator()(const char *str) const { return hash_type{}(str); }
+    std::size_t operator()(const Identifier &str) const {
+        return hash_type{}(str);
+    }
+    std::size_t operator()(IdRef str) const { return hash_type{}(str); }
+};
+
+/**
  * Type alias for Node and Section slots. Effectively an unsigned integer.
  */
 using SlotId = std::size_t;

@@ -63,8 +63,7 @@ Model::AddResult Model::addSection(Section section) {
 
 Model::RemoveResult Model::removeNode(IdRef id) {
 
-    // FIXME prevent copying
-    auto it = m_nodes.find(std::string(id));
+    auto it = m_nodes.find(id);
 
     if (it == m_nodes.end()) {
         return RemoveResult::NOT_FOUND;
@@ -87,8 +86,7 @@ Model::RemoveResult Model::removeNode(IdRef id) {
 
 Model::RemoveResult Model::removeSection(IdRef id) {
 
-    // FIXME prevent copying
-    auto it = m_sections.find(std::string(id));
+    auto it = m_sections.find(id);
 
     if (it == m_sections.end()) {
         return RemoveResult::NOT_FOUND;
@@ -142,26 +140,22 @@ Model::LinkResult Model::link(IdRef sectionId, IdRef startNodeId,
 }
 
 const Node *Model::node(IdRef id) const {
-    // FIXME prevent copying
-    auto it = m_nodes.find(std::string(id));
+    auto it = m_nodes.find(id);
     return it == m_nodes.end() ? nullptr : &it->second;
 }
 
 const Section *Model::section(IdRef id) const {
-    // FIXME prevent copying
-    auto it = m_sections.find(std::string(id));
+    auto it = m_sections.find(id);
     return it == m_sections.end() ? nullptr : &it->second;
 }
 
 Node *Model::node(IdRef id) {
-    // FIXME prevent copying
-    auto it = m_nodes.find(std::string(id));
+    auto it = m_nodes.find(id);
     return it == m_nodes.end() ? nullptr : &it->second;
 }
 
 Section *Model::section(IdRef id) {
-    // FIXME prevent copying
-    auto it = m_sections.find(std::string(id));
+    auto it = m_sections.find(id);
     return it == m_sections.end() ? nullptr : &it->second;
 }
 

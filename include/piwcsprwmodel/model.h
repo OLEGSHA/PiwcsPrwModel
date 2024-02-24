@@ -2,8 +2,8 @@
 #define PIWCS_PRW_MODEL_MODEL
 
 #include "fwd.h"
+#include "idmap.h"
 #include "util.h"
-#include <unordered_map>
 
 // Both required by unordered_map
 #include "nodes.h"
@@ -37,8 +37,8 @@ namespace piwcs::prw {
  */
 class Model {
 
-    std::unordered_map<Identifier, Node> m_nodes;
-    std::unordered_map<Identifier, Section> m_sections;
+    IdMap<Node> m_nodes;
+    IdMap<Section> m_sections;
 
   public:
     /**
@@ -49,9 +49,7 @@ class Model {
      *
      * @return a mapping of IDs to Nodes
      */
-    const std::unordered_map<Identifier, Node> &nodes() const {
-        return m_nodes;
-    }
+    const IdMap<Node> &nodes() const { return m_nodes; }
 
     /**
      * Provides access to the internal mapping of IDs to all Sections.
@@ -61,9 +59,7 @@ class Model {
      *
      * @return a mapping of IDs to Sections
      */
-    const std::unordered_map<Identifier, Section> &sections() const {
-        return m_sections;
-    }
+    const IdMap<Section> &sections() const { return m_sections; }
 
     /**
      * Possible return values of `add*` methods.
