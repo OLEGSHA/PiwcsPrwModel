@@ -85,8 +85,8 @@ void parseSection(minijson::istream_context &ctx, Model &model,
             Section(sectionId, data.bidir, data.length, nullptr))) {
         throw IllegalModelError("duplicate section ID or destination address");
     }
-    if (!model.link(sectionId, Identifier(data.startNode), data.startSlot,
-                    Identifier(data.endNode), data.endSlot)) {
+    if (!model.link(sectionId, data.startNode, data.startSlot, data.endNode,
+                    data.endSlot)) {
         throw IllegalModelError("linkage inconsistency found");
     }
 }
@@ -141,7 +141,7 @@ Model readModel(std::istream &in) {
 }
 
 Model readModel(const std::string &filename) {
-    std::ifstream in(filename, std::ios_base::binary);
+    std::ifstream in(filename);
     in.exceptions(std::ios_base::failbit); // throws if the file failed to open
     return readModel(in);
 }

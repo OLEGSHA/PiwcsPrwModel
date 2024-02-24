@@ -12,7 +12,7 @@ void writeModel(std::ostream &out, const Model &model) {
 }
 
 void writeModel(const std::string &filename, const Model &model) {
-    std::ofstream out(filename, std::ios_base::binary);
+    std::ofstream out(filename);
     out.exceptions(std::ios_base::failbit); // throws if the file failed to open
     writeModel(out, model);
 }
