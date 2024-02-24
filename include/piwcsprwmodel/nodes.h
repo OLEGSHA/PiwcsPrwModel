@@ -99,7 +99,7 @@ extern const NodeType END;
 class Node {
 
   public:
-    static constexpr size_t MAX_SLOTS = 4;
+    static constexpr std::size_t MAX_SLOTS = 4;
 
   private:
     NodeType m_type;
@@ -129,7 +129,7 @@ class Node {
      *
      * @return the ID of this Node
      */
-    [[nodiscard]] const Identifier &id() const { return m_id; }
+    [[nodiscard]] IdRef id() const { return m_id; }
 
     /**
      * Returns the number of Sections this Node connects.
@@ -146,7 +146,7 @@ class Node {
      *
      * @return the ID of the requested section, `ID_NULL` or `ID_INVALID`
      */
-    [[nodiscard]] const Identifier &section(SlotId slot) const {
+    [[nodiscard]] IdRef section(SlotId slot) const {
         return slot > sectionCount() ? ID_INVALID : m_slots[slot];
     }
 

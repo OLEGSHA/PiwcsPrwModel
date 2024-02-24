@@ -15,12 +15,17 @@ namespace piwcs::prw {
 /**
  * Maximum supported length of identifiers in UTF-8 bytes.
  */
-constexpr size_t IDENT_LENGTH = 15;
+constexpr std::size_t IDENT_LENGTH = 15;
 
 /**
  * Type alias for identifiers. Effectively a string.
  */
 using Identifier = std::string;
+
+/**
+ * Type alias for read-only identifier access.
+ */
+using IdRef = std::string_view;
 
 /**
  * The Identifier value that should be used to express a lack of an identifier.
@@ -42,7 +47,7 @@ static const Identifier ID_INVALID = "#invalid";
  *
  * @return whether the argument is a valid identifier
  */
-bool isIdOrNull(const Identifier &);
+bool isIdOrNull(IdRef);
 
 /**
  * Determines if the provided Identifier is valid and not `ID_NULL`.
@@ -51,12 +56,26 @@ bool isIdOrNull(const Identifier &);
  *
  * @see isIdOrNull to only test validity
  */
-bool isId(const Identifier &);
+bool isId(IdRef);
+
+/**
+ * Allow Identifiers to be hash-transparent with IdRef and `const char *`;
+ */
+struct IdHash {
+    using hash_type = std::hash<std::string_view>;
+    using is_transparent = void;
+
+    std::size_t operator()(const char *str) const { return hash_type{}(str); }
+    std::size_t operator()(const Identifier &str) const {
+        return hash_type{}(str);
+    }
+    std::size_t operator()(IdRef str) const { return hash_type{}(str); }
+};
 
 /**
  * Type alias for Node and Section slots. Effectively an unsigned integer.
  */
-using SlotId = size_t;
+using SlotId = std::size_t;
 
 } // namespace piwcs::prw
 

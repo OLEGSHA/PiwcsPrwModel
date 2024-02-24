@@ -7,12 +7,12 @@
 namespace piwcs::prw {
 
 namespace {
-const char *fmt(const Identifier &id) {
+std::string_view fmt(IdRef id) {
     if (isIdOrNull(id) && !isId(id)) {
         return "#null";
     }
 
-    return id.c_str();
+    return id;
 }
 } // namespace
 

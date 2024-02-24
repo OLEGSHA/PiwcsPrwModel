@@ -61,7 +61,7 @@ Model::AddResult Model::addSection(Section section) {
     return AddResult::OK;
 }
 
-Model::RemoveResult Model::removeNode(const Identifier &id) {
+Model::RemoveResult Model::removeNode(IdRef id) {
 
     auto it = m_nodes.find(id);
 
@@ -84,7 +84,7 @@ Model::RemoveResult Model::removeNode(const Identifier &id) {
     return RemoveResult::OK;
 }
 
-Model::RemoveResult Model::removeSection(const Identifier &id) {
+Model::RemoveResult Model::removeSection(IdRef id) {
 
     auto it = m_sections.find(id);
 
@@ -104,9 +104,9 @@ Model::RemoveResult Model::removeSection(const Identifier &id) {
     return RemoveResult::OK;
 }
 
-Model::LinkResult Model::link(const Identifier &sectionId,
-                              const Identifier &startNodeId, SlotId startSlot,
-                              const Identifier &endNodeId, SlotId endSlot) {
+Model::LinkResult Model::link(IdRef sectionId, IdRef startNodeId,
+                              SlotId startSlot, IdRef endNodeId,
+                              SlotId endSlot) {
 
     Section *section = this->section(sectionId);
     Node *start = this->node(startNodeId);
@@ -139,22 +139,22 @@ Model::LinkResult Model::link(const Identifier &sectionId,
     return LinkResult::OK;
 }
 
-const Node *Model::node(const Identifier &id) const {
+const Node *Model::node(IdRef id) const {
     auto it = m_nodes.find(id);
     return it == m_nodes.end() ? nullptr : &it->second;
 }
 
-const Section *Model::section(const Identifier &id) const {
+const Section *Model::section(IdRef id) const {
     auto it = m_sections.find(id);
     return it == m_sections.end() ? nullptr : &it->second;
 }
 
-Node *Model::node(const Identifier &id) {
+Node *Model::node(IdRef id) {
     auto it = m_nodes.find(id);
     return it == m_nodes.end() ? nullptr : &it->second;
 }
 
-Section *Model::section(const Identifier &id) {
+Section *Model::section(IdRef id) {
     auto it = m_sections.find(id);
     return it == m_sections.end() ? nullptr : &it->second;
 }

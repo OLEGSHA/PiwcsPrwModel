@@ -2,8 +2,8 @@
 #define PIWCS_PRW_MODEL_MODEL
 
 #include "fwd.h"
+#include "idmap.h"
 #include "util.h"
-#include <unordered_map>
 
 // Both required by unordered_map
 #include "nodes.h"
@@ -37,8 +37,8 @@ namespace piwcs::prw {
  */
 class Model {
 
-    std::unordered_map<Identifier, Node> m_nodes;
-    std::unordered_map<Identifier, Section> m_sections;
+    IdMap<Node> m_nodes;
+    IdMap<Section> m_sections;
 
   public:
     /**
@@ -49,9 +49,7 @@ class Model {
      *
      * @return a mapping of IDs to Nodes
      */
-    const std::unordered_map<Identifier, Node> &nodes() const {
-        return m_nodes;
-    }
+    const IdMap<Node> &nodes() const { return m_nodes; }
 
     /**
      * Provides access to the internal mapping of IDs to all Sections.
@@ -61,9 +59,7 @@ class Model {
      *
      * @return a mapping of IDs to Sections
      */
-    const std::unordered_map<Identifier, Section> &sections() const {
-        return m_sections;
-    }
+    const IdMap<Section> &sections() const { return m_sections; }
 
     /**
      * Possible return values of `add*` methods.
@@ -153,7 +149,7 @@ class Model {
      *
      * @return `OK` upon success, `NOT_FOUND` or `REFERENCED` upon failure
      */
-    RemoveResult removeNode(const Identifier &id);
+    RemoveResult removeNode(IdRef id);
 
     /**
      * Removes a Section from the model.
@@ -167,7 +163,7 @@ class Model {
      *
      * @return `OK` upon success, `NOT_FOUND` or `REFERENCED` upon failure
      */
-    RemoveResult removeSection(const Identifier &id);
+    RemoveResult removeSection(IdRef id);
 
     /**
      * Possible return values of `link` method.
@@ -219,9 +215,8 @@ class Model {
      * @return `OK` upon success, `NOT_FOUND`, `NODE_OCCUPIED`,
      * `SECTION_OCCUPIED` or `SAME_SLOT` upon failure
      */
-    LinkResult link(const Identifier &sectionId, const Identifier &startNodeId,
-                    SlotId startSlotId, const Identifier &endNodeId,
-                    SlotId endSlotId);
+    LinkResult link(IdRef sectionId, IdRef startNodeId, SlotId startSlotId,
+                    IdRef endNodeId, SlotId endSlotId);
 
     /**
      * Searches for a Node with the given ID.
@@ -233,7 +228,7 @@ class Model {
      *
      * @return a raw pointer to the Node, or `nullptr` if none found
      */
-    const Node *node(const Identifier &id) const;
+    const Node *node(IdRef id) const;
 
     /**
      * Searches for a Section with the given ID.
@@ -245,7 +240,7 @@ class Model {
      *
      * @return a raw pointer to the Section, or `nullptr` if none found
      */
-    const Section *section(const Identifier &id) const;
+    const Section *section(IdRef id) const;
 
     /**
      * Searches for a Node with the given ID.
@@ -257,7 +252,7 @@ class Model {
      *
      * @return a raw pointer to the Node, or `nullptr` if none found
      */
-    Node *node(const Identifier &id);
+    Node *node(IdRef id);
 
     /**
      * Searches for a Section with the given ID.
@@ -269,7 +264,7 @@ class Model {
      *
      * @return a raw pointer to the Section, or `nullptr` if none found
      */
-    Section *section(const Identifier &id);
+    Section *section(IdRef id);
 };
 
 inline bool operator!(Model::AddResult r) { return r != Model::AddResult::OK; }
