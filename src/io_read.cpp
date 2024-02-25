@@ -58,6 +58,11 @@ void parseNode(minijson::istream_context &ctx, Model &model,
     }
 }
 
+struct DestData {
+    std::string_view address{};
+    std::string_view name{};
+};
+
 struct SectionData {
     std::optional<std::string_view> startNode{};
     std::optional<SlotId> startSlot{};
@@ -65,7 +70,20 @@ struct SectionData {
     std::optional<SlotId> endSlot{};
     bool bidir = false;
     Section::Length length = 0;
+    std::unique_ptr<Destination> dest{};
 };
+
+const minijson::dispatcher destDispatcher{
+    handler("address", into(&DestData::address)),
+    handler("name", into(&DestData::name)),
+};
+
+void parseDest(SectionData &s, value, minijson::istream_context &ctx) {
+    DestData data;
+    destDispatcher.run(ctx, data);
+    s.dest = std::make_unique<Destination>(Destination::Address(data.address),
+                                           Destination::Name(data.name));
+}
 
 const minijson::dispatcher sectionDispatcher{
     optional_handler("startNode", into(&SectionData::startNode)),
@@ -76,7 +94,7 @@ const minijson::dispatcher sectionDispatcher{
     optional_handler("bidir", into(&SectionData::bidir)),
     optional_handler("length", into(&SectionData::length)),
 
-    // TODO read destination data
+    optional_handler("dest", parseDest),
 };
 
 void parseSection(minijson::istream_context &ctx, Model &model,
@@ -85,8 +103,8 @@ void parseSection(minijson::istream_context &ctx, Model &model,
 
     sectionDispatcher.run(ctx, data);
 
-    if (!model.addSection(
-            Section(sectionId, data.bidir, data.length, nullptr))) {
+    if (!model.addSection(Section(sectionId, data.bidir, data.length,
+                                  std::move(data.dest)))) {
         throw IllegalModelError("duplicate section ID or destination address");
     }
 

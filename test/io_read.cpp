@@ -118,7 +118,11 @@ TEST(IoRead, Maximal) {
                 "endNode": "n2",
                 "endSlot": 1,
                 "length": 123,
-                "bidir": true
+                "bidir": true,
+                "dest": {
+                    "address": "1.0.1",
+                    "name": "My Destination"
+                }
             }
         }
     ])json");
@@ -135,7 +139,9 @@ TEST(IoRead, Maximal) {
     ASSERT_NE(s1, nullptr);
     ASSERT_TRUE(s1->isBidir());
     ASSERT_EQ(s1->length(), 123);
-    ASSERT_FALSE(s1->isDestination());
+    ASSERT_TRUE(s1->isDestination());
+    ASSERT_EQ(s1->destination()->address(), "1.0.1");
+    ASSERT_EQ(s1->destination()->name(), "My Destination");
 
     ASSERT_EQ(n1->section(0), "s1");
     ASSERT_EQ(n1->section(1), ID_NULL);
