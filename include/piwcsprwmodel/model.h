@@ -102,6 +102,21 @@ class Model {
     AddResult addNode(Node node);
 
     /**
+     * Adds a new Node to the model.
+     *
+     * The operation may fail if the node with given ID already exists
+     * (`DUPLICATE`), or if the node references any entities (`HAS_REF`). Should
+     * addition fail, all objects remain valid and no change is made.
+     *
+     * @param node the Node to add
+     *
+     * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
+     */
+    template <typename... Args> AddResult newNode(Args &&...args) {
+        return addNode(Node(std::forward<Args>(args)...));
+    }
+
+    /**
      * Adds an existing Section to the model.
      *
      * The operation may fail if the section with given ID already exists
@@ -115,6 +130,23 @@ class Model {
      * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
      */
     AddResult addSection(Section section);
+
+    /**
+     * Adds a new Section to the model.
+     *
+     * The operation may fail if the section with given ID already exists
+     * (`DUPLICATE`), if the section is a destination and another destination
+     * with the same address already exists (`DUPLICATE`), or if the section
+     * references any entities (`HAS_REF`). Should addition fail, all objects
+     * remain valid and no change is made.
+     *
+     * @param node the Section to add
+     *
+     * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
+     */
+    template <typename... Args> AddResult newSection(Args &&...args) {
+        return addSection(Section(std::forward<Args>(args)...));
+    }
 
     /**
      * Possible return values of `remove*` methods.

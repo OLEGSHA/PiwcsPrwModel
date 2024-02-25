@@ -53,7 +53,7 @@ void parseNode(minijson::istream_context &ctx, Model &model,
 
     nodeDispatcher.run(ctx, data);
 
-    if (!model.addNode(Node(data.type, std::move(nodeId)))) {
+    if (!model.newNode(data.type, std::move(nodeId))) {
         throw IllegalModelError("duplicate node ID");
     }
 }
@@ -103,8 +103,8 @@ void parseSection(minijson::istream_context &ctx, Model &model,
 
     sectionDispatcher.run(ctx, data);
 
-    if (!model.addSection(Section(sectionId, data.bidir, data.length,
-                                  std::move(data.dest)))) {
+    if (!model.newSection(sectionId, data.bidir, data.length,
+                          std::move(data.dest))) {
         throw IllegalModelError("duplicate section ID or destination address");
     }
 
