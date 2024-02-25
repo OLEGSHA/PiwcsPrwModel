@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <minijson_reader/minijson_reader.hpp>
+#include <optional>
 #include <sstream>
 
 namespace piwcs::prw {
@@ -12,6 +13,10 @@ namespace {
 
 using namespace minijson::handlers;
 using minijson::value;
+
+template <typename S, typename V> auto into(V S::*dest) {
+    return [dest](S &s, value v) { v.to(s.*dest); };
+}
 
 struct NodeData {
     NodeType type{};
@@ -54,23 +59,22 @@ void parseNode(minijson::istream_context &ctx, Model &model,
 }
 
 struct SectionData {
-    std::string_view startNode{};
-    SlotId startSlot{};
-    std::string_view endNode{};
-    SlotId endSlot{};
+    std::optional<std::string_view> startNode{};
+    std::optional<SlotId> startSlot{};
+    std::optional<std::string_view> endNode{};
+    std::optional<SlotId> endSlot{};
     bool bidir = false;
     Section::Length length = 0;
 };
 
 const minijson::dispatcher sectionDispatcher{
-    handler("startNode", [](SectionData &sd, value v) { v.to(sd.startNode); }),
-    handler("startSlot", [](SectionData &sd, value v) { v.to(sd.startSlot); }),
-    handler("endNode", [](SectionData &sd, value v) { v.to(sd.endNode); }),
-    handler("endSlot", [](SectionData &sd, value v) { v.to(sd.endSlot); }),
+    optional_handler("startNode", into(&SectionData::startNode)),
+    optional_handler("startSlot", into(&SectionData::startSlot)),
+    optional_handler("endNode", into(&SectionData::endNode)),
+    optional_handler("endSlot", into(&SectionData::endSlot)),
 
-    optional_handler("bidir", [](SectionData &sd, value v) { v.to(sd.bidir); }),
-    optional_handler("length",
-                     [](SectionData &sd, value v) { v.to(sd.length); }),
+    optional_handler("bidir", into(&SectionData::bidir)),
+    optional_handler("length", into(&SectionData::length)),
 
     // TODO read destination data
 };
@@ -85,9 +89,20 @@ void parseSection(minijson::istream_context &ctx, Model &model,
             Section(sectionId, data.bidir, data.length, nullptr))) {
         throw IllegalModelError("duplicate section ID or destination address");
     }
-    if (!model.link(sectionId, data.startNode, data.startSlot, data.endNode,
-                    data.endSlot)) {
-        throw IllegalModelError("linkage inconsistency found");
+
+    bool someLinkFields =
+        data.startNode || data.startSlot || data.endNode || data.endSlot;
+    bool allLinkFields =
+        data.startNode && data.startSlot && data.endNode && data.endSlot;
+
+    if (someLinkFields) {
+        if (!allLinkFields) {
+            throw IllegalModelError("linkage fields missing");
+        }
+        if (!model.link(sectionId, *data.startNode, *data.startSlot,
+                        *data.endNode, *data.endSlot)) {
+            throw IllegalModelError("linkage inconsistency found");
+        }
     }
 }
 
