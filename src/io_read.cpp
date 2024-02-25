@@ -111,6 +111,12 @@ void parseMain(minijson::istream_context &ctx, Model &model) {
         }
         part++;
     });
+
+    if (part == 0) {
+        throw InvalidFormatError("main array is empty");
+    } else if (part == 1) {
+        throw InvalidFormatError("section data not found");
+    }
 }
 
 template <typename S> [[noreturn]] void wrap_exception(const char *lhs, S rhs) {
