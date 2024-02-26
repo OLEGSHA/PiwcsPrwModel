@@ -61,8 +61,17 @@ static constexpr NodeTypeInfo FIXED_INFO {
 };
 extern const NodeType FIXED = &FIXED_INFO;
 
-// TODO design and implement CROSSING nodes
-extern const NodeType CROSSING = nullptr;
+static constexpr NodeTypeInfo CROSSING_INFO {
+    "CROSSING", 4,
+    {
+        // 0 <-> 1, 2 <-> 3
+        { false, true,  false, false, },
+        { true,  false, false, false, },
+        { false, false, false, true,  },
+        { false, false, true,  false, },
+    }
+};
+extern const NodeType CROSSING = &CROSSING_INFO;
 
 static constexpr NodeTypeInfo END_INFO {
     "END", 1,
