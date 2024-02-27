@@ -144,12 +144,12 @@ TEST(Model, Link) {
     EXPECT_TRUE(!!model.newSection("s2", false));
     EXPECT_TRUE(!!model.newNode(THRU, "n1"));
     EXPECT_TRUE(!!model.newNode(THRU, "n2"));
-    auto s1 = model.section("s1");
-    auto s2 = model.section("s2");
-    auto n1 = model.node("n1");
-    auto n2 = model.node("n2");
 
     auto checkStatusQuo = [&]() {
+        auto s1 = model.section("s1");
+        auto s2 = model.section("s2");
+        auto n1 = model.node("n1");
+        auto n2 = model.node("n2");
         EXPECT_EQ(n1->section(0), s1->id());
         EXPECT_EQ(n1->section(1), ID_NULL);
         EXPECT_EQ(n2->section(0), ID_NULL);
@@ -163,7 +163,6 @@ TEST(Model, Link) {
     // OK
     auto res = model.link("s1", "n1", 0, "n2", 1);
     EXPECT_EQ(res, Model::LinkResult::OK);
-    // FIXME pointers might have invalidated
     checkStatusQuo();
 
     // s9 does not exist
