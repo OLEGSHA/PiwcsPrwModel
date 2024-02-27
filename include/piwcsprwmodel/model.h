@@ -251,6 +251,38 @@ class Model {
                     IdRef endNodeId, SlotId endSlotId);
 
     /**
+     * Possible return values of `unlink` method.
+     */
+    enum class UnlinkResult {
+        /**
+         * Link was removed was successfully, the Model has changed.
+         */
+        OK,
+
+        /**
+         * Link removal was aborted because the section could not be found.
+         */
+        NOT_FOUND,
+
+        /**
+         * Link removal was aborted because the section was not linked.
+         */
+        NOT_LINKED
+    };
+
+    /**
+     * Unlinks a previously linked Section. The Section remains in this Model.
+     *
+     * The operation may fail if the section with given ID does not exist
+     * (`NOT_FOUND`), or if it is not currently linked (`NOT_LINKED`).
+     *
+     * @param sectionId ID of the section to unlink
+     *
+     * @return `OK` upon success, `NOT_FOUND` or `NOT_LINKED` upon failure
+     */
+    UnlinkResult unlink(IdRef sectionId);
+
+    /**
      * Searches for a Node with the given ID.
      *
      * The returned pointer is valid until a change is made to this Model

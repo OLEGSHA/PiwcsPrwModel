@@ -163,6 +163,7 @@ TEST(Model, Link) {
     // OK
     auto res = model.link("s1", "n1", 0, "n2", 1);
     EXPECT_EQ(res, Model::LinkResult::OK);
+    // FIXME pointers might have invalidated
     checkStatusQuo();
 
     // s9 does not exist
@@ -245,4 +246,71 @@ TEST(Model, RemoveLinked) {
     res = model.removeSection("s1");
     EXPECT_EQ(res, Model::RemoveResult::REFERENCED);
     checkStatusQuo();
+}
+
+TEST(Model, UnlinkFailure) {
+    Model model;
+    EXPECT_TRUE(!!model.newSection("s1", false));
+    EXPECT_TRUE(!!model.newSection("s2", false));
+    EXPECT_TRUE(!!model.newNode(THRU, "n1"));
+    EXPECT_TRUE(!!model.newNode(THRU, "n2"));
+    EXPECT_TRUE(!!model.link("s1", "n1", 0, "n2", 1));
+    auto s1 = model.section("s1");
+    auto s2 = model.section("s2");
+    auto n1 = model.node("n1");
+    auto n2 = model.node("n2");
+
+    auto checkStatusQuo = [&]() {
+        EXPECT_NE(model.section("s1"), nullptr);
+        EXPECT_NE(model.section("s2"), nullptr);
+        EXPECT_NE(model.node("n1"), nullptr);
+        EXPECT_NE(model.node("n2"), nullptr);
+        EXPECT_EQ(n1->section(0), s1->id());
+        EXPECT_EQ(n1->section(1), ID_NULL);
+        EXPECT_EQ(n2->section(0), ID_NULL);
+        EXPECT_EQ(n2->section(1), s1->id());
+        EXPECT_EQ(s1->start(), n1->id());
+        EXPECT_EQ(s1->end(), n2->id());
+        EXPECT_EQ(s2->start(), ID_NULL);
+        EXPECT_EQ(s2->end(), ID_NULL);
+    };
+    checkStatusQuo();
+
+    auto res = model.unlink("s3");
+    EXPECT_EQ(res, Model::UnlinkResult::NOT_FOUND);
+    checkStatusQuo();
+
+    res = model.unlink("s2");
+    EXPECT_EQ(res, Model::UnlinkResult::NOT_LINKED);
+    checkStatusQuo();
+}
+
+TEST(Model, Unlink) {
+    Model model;
+    EXPECT_TRUE(!!model.newSection("s1", false));
+    EXPECT_TRUE(!!model.newSection("s2", false));
+    EXPECT_TRUE(!!model.newNode(THRU, "n1"));
+    EXPECT_TRUE(!!model.newNode(THRU, "n2"));
+    EXPECT_TRUE(!!model.link("s1", "n1", 0, "n2", 1));
+    EXPECT_TRUE(!!model.link("s2", "n1", 1, "n2", 0));
+
+    auto res = model.unlink("s1");
+
+    EXPECT_EQ(res, Model::UnlinkResult::OK);
+    auto s1 = model.section("s1");
+    auto s2 = model.section("s2");
+    auto n1 = model.node("n1");
+    auto n2 = model.node("n2");
+    EXPECT_NE(s1, nullptr);
+    EXPECT_NE(s2, nullptr);
+    EXPECT_NE(n1, nullptr);
+    EXPECT_NE(n2, nullptr);
+    EXPECT_EQ(n1->section(0), ID_NULL);
+    EXPECT_EQ(n1->section(1), s2->id());
+    EXPECT_EQ(n2->section(0), s2->id());
+    EXPECT_EQ(n2->section(1), ID_NULL);
+    EXPECT_EQ(s1->start(), ID_NULL);
+    EXPECT_EQ(s1->end(), ID_NULL);
+    EXPECT_EQ(s2->start(), n1->id());
+    EXPECT_EQ(s2->end(), n2->id());
 }

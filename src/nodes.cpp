@@ -1,5 +1,6 @@
 #include <piwcsprwmodel/nodes.h>
 
+#include "debug.h"
 #include "nodetypeinfo.h"
 
 namespace piwcs::prw {
@@ -14,6 +15,10 @@ bool Node::couldTraverse(SlotId from, SlotId to) const {
     if (from >= type.slotCount || to >= type.slotCount) {
         return false;
     }
+
+    _ASSERT(from < Node::MAX_SLOTS, "slotCount >= MAX_SLOTS");
+    _ASSERT(to < Node::MAX_SLOTS, "slotCount >= MAX_SLOTS");
+
     return type.allowedRoutes[from][to];
 }
 
