@@ -223,10 +223,9 @@ class Model {
         SECTION_OCCUPIED,
 
         /**
-         * Linkage was aborted because the start and the end are the same slot
-         * of the same node.
+         * Linkage was aborted because the start and the end are the same node.
          */
-        SAME_SLOT
+        SAME_NODE
     };
 
     /**
@@ -236,7 +235,7 @@ class Model {
      * entities (`NOT_FOUND`), some requested slot does not exist in its Node
      * (`NOT_FOUND`), some slot is already connected (`NODE_OCCUPIED`), the
      * section is already linking some Nodes (`SECTION_OCCUPIED`), or
-     * `startNode == endNode && startSlotId == endSlotId` (`SAME_SLOT`).
+     * `startNode == endNode` (`SAME_NODE`).
      *
      * @param sectionId ID of the section to use
      * @param startNodeId ID of the Node to connect to the start of the section
@@ -245,7 +244,7 @@ class Model {
      * @param endSlotId SlotId of the end Node to connect to
      *
      * @return `OK` upon success, `NOT_FOUND`, `NODE_OCCUPIED`,
-     * `SECTION_OCCUPIED` or `SAME_SLOT` upon failure
+     * `SECTION_OCCUPIED` or `SAME_NODE` upon failure
      */
     LinkResult link(IdRef sectionId, IdRef startNodeId, SlotId startSlotId,
                     IdRef endNodeId, SlotId endSlotId);

@@ -206,8 +206,8 @@ TEST(Model, Link) {
     checkStatusQuo();
 
     // start == end
-    res = model.link("s2", "n1", 1, "n1", 1);
-    EXPECT_EQ(res, Model::LinkResult::SAME_SLOT);
+    res = model.link("s2", "n1", 0, "n1", 1);
+    EXPECT_EQ(res, Model::LinkResult::SAME_NODE);
     checkStatusQuo();
 }
 

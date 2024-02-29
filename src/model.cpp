@@ -118,8 +118,8 @@ Model::LinkResult Model::link(IdRef sectionId, IdRef startNodeId,
         return LinkResult::NOT_FOUND;
     }
 
-    if (start == end && startSlot == endSlot) {
-        return LinkResult::SAME_SLOT;
+    if (start == end) {
+        return LinkResult::SAME_NODE;
     }
 
     if (start->section(startSlot) != ID_NULL ||
@@ -157,6 +157,10 @@ Model::UnlinkResult Model::unlink(IdRef sectionId) {
 
     _DEBUG_ONLY() if (section->end() != ID_NULL) {
         _FAIL("section->start() != ID_NULL, section->end() == ID_NULL");
+    }
+
+    _DEBUG_ONLY() if (section->start() == section->end()) {
+        _FAIL("section->start() == section->end()");
     }
 
     Node *start = this->node(section->start());
