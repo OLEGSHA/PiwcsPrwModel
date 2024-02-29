@@ -1,3 +1,6 @@
 [submodule "lib/minijson_reader"]
 	path = lib/minijson_reader
 	url = https://github.com/giacomodrago/minijson_reader.git
+[submodule "lib/minijson_writer"]
+	path = lib/minijson_writer
+	url = https://github.com/giacomodrago/minijson_writer.git

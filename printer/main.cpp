@@ -22,5 +22,8 @@ int main(int argc, char *argv[]) {
         std::cout << '\t' << it.second << '\n';
     }
 
+    std::cout << std::endl;
+    writeModel(std::cout, model);
+
     return 0;
 }
