@@ -40,7 +40,7 @@ struct NodeTypeInfo;
  * Switches physically prohibit travel between straight and diverging tracks.
  * When a train enters the switch from its straight or diverging track, it is
  * directed into the common track. When a train enters the switch from its
- * common track, the switch chooses a track to direct it towards..
+ * common track, the switch chooses a track to direct it towards.
  *
  * `MOTORIZED` switches can only be entered from the common track. A routing
  * table consulted to determine whether the train should be diverted. For
@@ -56,6 +56,18 @@ struct NodeTypeInfo;
  * trains entering through common track.
  *
  * (All other switch configurations are invalid on the PRW.)
+ *
+ * ### Crossings
+ *
+ * Crossing nodes indicate an intersection of tracks where trains on
+ * intersecting tracks need to give way to one another. (Intersections where
+ * trains can travel freely, e.g. by means of a bridge, should not be marked
+ * with crossing nodes.)
+ *
+ * @par Crossing structure
+ * Track A connects slots 0 and 1. Track B connects slots 2 and 3. Travel is
+ * permitted on tracks A and B bidirectionally, but travelling between tracks
+ * is forbidden.
  *
  */
 using NodeType = const NodeTypeInfo *;

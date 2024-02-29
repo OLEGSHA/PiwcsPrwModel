@@ -1,5 +1,6 @@
 #include <piwcsprwmodel/nodes.h>
 
+#include "debug.h"
 #include "nodetypeinfo.h"
 
 namespace piwcs::prw {
@@ -14,6 +15,10 @@ bool Node::couldTraverse(SlotId from, SlotId to) const {
     if (from >= type.slotCount || to >= type.slotCount) {
         return false;
     }
+
+    _ASSERT(from < Node::MAX_SLOTS, "slotCount >= MAX_SLOTS");
+    _ASSERT(to < Node::MAX_SLOTS, "slotCount >= MAX_SLOTS");
+
     return type.allowedRoutes[from][to];
 }
 
@@ -61,8 +66,17 @@ static constexpr NodeTypeInfo FIXED_INFO {
 };
 extern const NodeType FIXED = &FIXED_INFO;
 
-// TODO design and implement CROSSING nodes
-extern const NodeType CROSSING = nullptr;
+static constexpr NodeTypeInfo CROSSING_INFO {
+    "CROSSING", 4,
+    {
+        // 0 <-> 1, 2 <-> 3
+        { false, true,  false, false, },
+        { true,  false, false, false, },
+        { false, false, false, true,  },
+        { false, false, true,  false, },
+    }
+};
+extern const NodeType CROSSING = &CROSSING_INFO;
 
 static constexpr NodeTypeInfo END_INFO {
     "END", 1,

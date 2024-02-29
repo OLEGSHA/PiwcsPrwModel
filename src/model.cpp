@@ -1,3 +1,4 @@
+#include "debug.h"
 #include <piwcsprwmodel/model.h>
 #include <piwcsprwmodel/nodes.h>
 #include <piwcsprwmodel/section.h>
@@ -117,8 +118,8 @@ Model::LinkResult Model::link(IdRef sectionId, IdRef startNodeId,
         return LinkResult::NOT_FOUND;
     }
 
-    if (start == end && startSlot == endSlot) {
-        return LinkResult::SAME_SLOT;
+    if (start == end) {
+        return LinkResult::SAME_NODE;
     }
 
     if (start->section(startSlot) != ID_NULL ||
@@ -131,12 +132,61 @@ Model::LinkResult Model::link(IdRef sectionId, IdRef startNodeId,
         return LinkResult::SECTION_OCCUPIED;
     }
 
+    _DEBUG_ONLY() if (section->end() != ID_NULL) {
+        _FAIL("section->start() == ID_NULL, section->end() != ID_NULL");
+    }
+
     start->m_slots[startSlot] = sectionId;
     end->m_slots[endSlot] = sectionId;
     section->m_start = startNodeId;
     section->m_end = endNodeId;
 
     return LinkResult::OK;
+}
+
+Model::UnlinkResult Model::unlink(IdRef sectionId) {
+    Section *section = this->section(sectionId);
+    if (section == nullptr) {
+        return UnlinkResult::NOT_FOUND;
+    }
+
+    // Check for section.end() is redundant
+    if (section->start() == ID_NULL) {
+        return UnlinkResult::NOT_LINKED;
+    }
+
+    _DEBUG_ONLY() if (section->end() != ID_NULL) {
+        _FAIL("section->start() != ID_NULL, section->end() == ID_NULL");
+    }
+
+    _DEBUG_ONLY() if (section->start() == section->end()) {
+        _FAIL("section->start() == section->end()");
+    }
+
+    Node *start = this->node(section->start());
+    Node *end = this->node(section->end());
+
+    _ASSERT(start != nullptr, "start node not found");
+    _ASSERT(end != nullptr, "end node not found");
+
+    for (auto *node : {start, end}) {
+        _DEBUG_ONLY(bool found);
+
+        for (auto &slot : node->m_slots) { // NOLINT *-array-to-pointer-decay
+            if (slot == sectionId) {
+                slot = ID_NULL;
+                _DEBUG_ONLY(found = true);
+                break;
+            }
+        }
+
+        _ASSERT(found, "node did not connect to unlinked section");
+    }
+
+    section->m_start = ID_NULL;
+    section->m_end = ID_NULL;
+
+    return UnlinkResult::OK;
 }
 
 const Node *Model::node(IdRef id) const {

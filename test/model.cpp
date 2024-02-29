@@ -26,19 +26,19 @@ TEST(Model, Constructor) {
 TEST(Model, AddNode) {
     Model model;
 
-    auto res = model.addNode(Node(THRU, "123"));
+    auto res = model.newNode(THRU, "123");
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.nodes().size(), 1);
 
-    res = model.addNode(Node(THRU, ID_INVALID));
+    res = model.newNode(THRU, ID_INVALID);
     EXPECT_EQ(res, Model::AddResult::BAD_ID);
     EXPECT_EQ(model.nodes().size(), 1);
 
-    res = model.addNode(Node(THRU, "123"));
+    res = model.newNode(THRU, "123");
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.nodes().size(), 1);
 
-    res = model.addNode(Node(THRU, "456"));
+    res = model.newNode(THRU, "456");
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.nodes().size(), 2);
 }
@@ -46,8 +46,8 @@ TEST(Model, AddNode) {
 TEST(Model, FindNode) {
     Model model;
 
-    model.addNode(Node(THRU, "123"));
-    model.addNode(Node(THRU, "456"));
+    model.newNode(THRU, "123");
+    model.newNode(THRU, "456");
 
     const Node *node = model.node("123");
     EXPECT_NE(node, nullptr);
@@ -60,7 +60,7 @@ TEST(Model, FindNode) {
 TEST(Model, RemoveNode) {
     Model model;
 
-    model.addNode(Node(THRU, "123"));
+    model.newNode(THRU, "123");
 
     auto res = model.removeNode("000");
     EXPECT_EQ(res, Model::RemoveResult::NOT_FOUND);
@@ -74,19 +74,19 @@ TEST(Model, RemoveNode) {
 TEST(Model, AddSection) {
     Model model;
 
-    auto res = model.addSection(Section("123", false));
+    auto res = model.newSection("123", false);
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.addSection(Section(ID_INVALID, false));
+    res = model.newSection(ID_INVALID, false);
     EXPECT_EQ(res, Model::AddResult::BAD_ID);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.addSection(Section("123", false));
+    res = model.newSection("123", false);
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.addSection(Section("456", false));
+    res = model.newSection("456", false);
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 2);
 }
@@ -94,18 +94,18 @@ TEST(Model, AddSection) {
 TEST(Model, AddSectionWithDestination) {
     Model model;
 
-    auto res = model.addSection(Section(
-        "123", false, 0, std::make_unique<Destination>("1.0.0", "Name1")));
+    auto res = model.newSection(
+        "123", false, 0, std::make_unique<Destination>("1.0.0", "Name1"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.addSection(Section(
-        "456", false, 0, std::make_unique<Destination>("1.0.1", "Name1")));
+    res = model.newSection("456", false, 0,
+                           std::make_unique<Destination>("1.0.1", "Name1"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 2);
 
-    res = model.addSection(Section(
-        "789", false, 0, std::make_unique<Destination>("1.0.1", "Name1")));
+    res = model.newSection("789", false, 0,
+                           std::make_unique<Destination>("1.0.1", "Name1"));
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 2);
 }
@@ -113,8 +113,8 @@ TEST(Model, AddSectionWithDestination) {
 TEST(Model, FindSection) {
     Model model;
 
-    model.addSection(Section("123", false));
-    model.addSection(Section("456", false));
+    model.newSection("123", false);
+    model.newSection("456", false);
 
     const Section *section = model.section("123");
     EXPECT_NE(section, nullptr);
@@ -127,7 +127,7 @@ TEST(Model, FindSection) {
 TEST(Model, RemoveSection) {
     Model model;
 
-    model.addSection(Section("123", false));
+    model.newSection("123", false);
 
     auto res = model.removeSection("000");
     EXPECT_EQ(res, Model::RemoveResult::NOT_FOUND);
@@ -140,16 +140,16 @@ TEST(Model, RemoveSection) {
 
 TEST(Model, Link) {
     Model model;
-    EXPECT_TRUE(!!model.addSection(Section("s1", false)));
-    EXPECT_TRUE(!!model.addSection(Section("s2", false)));
-    EXPECT_TRUE(!!model.addNode(Node(THRU, "n1")));
-    EXPECT_TRUE(!!model.addNode(Node(THRU, "n2")));
-    auto s1 = model.section("s1");
-    auto s2 = model.section("s2");
-    auto n1 = model.node("n1");
-    auto n2 = model.node("n2");
+    EXPECT_TRUE(!!model.newSection("s1", false));
+    EXPECT_TRUE(!!model.newSection("s2", false));
+    EXPECT_TRUE(!!model.newNode(THRU, "n1"));
+    EXPECT_TRUE(!!model.newNode(THRU, "n2"));
 
     auto checkStatusQuo = [&]() {
+        auto s1 = model.section("s1");
+        auto s2 = model.section("s2");
+        auto n1 = model.node("n1");
+        auto n2 = model.node("n2");
         EXPECT_EQ(n1->section(0), s1->id());
         EXPECT_EQ(n1->section(1), ID_NULL);
         EXPECT_EQ(n2->section(0), ID_NULL);
@@ -206,16 +206,16 @@ TEST(Model, Link) {
     checkStatusQuo();
 
     // start == end
-    res = model.link("s2", "n1", 1, "n1", 1);
-    EXPECT_EQ(res, Model::LinkResult::SAME_SLOT);
+    res = model.link("s2", "n1", 0, "n1", 1);
+    EXPECT_EQ(res, Model::LinkResult::SAME_NODE);
     checkStatusQuo();
 }
 
 TEST(Model, RemoveLinked) {
     Model model;
-    EXPECT_TRUE(!!model.addSection(Section("s1", false)));
-    EXPECT_TRUE(!!model.addNode(Node(THRU, "n1")));
-    EXPECT_TRUE(!!model.addNode(Node(THRU, "n2")));
+    EXPECT_TRUE(!!model.newSection("s1", false));
+    EXPECT_TRUE(!!model.newNode(THRU, "n1"));
+    EXPECT_TRUE(!!model.newNode(THRU, "n2"));
     EXPECT_TRUE(!!model.link("s1", "n1", 0, "n2", 1));
     auto s1 = model.section("s1");
     auto n1 = model.node("n1");
@@ -245,4 +245,71 @@ TEST(Model, RemoveLinked) {
     res = model.removeSection("s1");
     EXPECT_EQ(res, Model::RemoveResult::REFERENCED);
     checkStatusQuo();
+}
+
+TEST(Model, UnlinkFailure) {
+    Model model;
+    EXPECT_TRUE(!!model.newSection("s1", false));
+    EXPECT_TRUE(!!model.newSection("s2", false));
+    EXPECT_TRUE(!!model.newNode(THRU, "n1"));
+    EXPECT_TRUE(!!model.newNode(THRU, "n2"));
+    EXPECT_TRUE(!!model.link("s1", "n1", 0, "n2", 1));
+    auto s1 = model.section("s1");
+    auto s2 = model.section("s2");
+    auto n1 = model.node("n1");
+    auto n2 = model.node("n2");
+
+    auto checkStatusQuo = [&]() {
+        EXPECT_NE(model.section("s1"), nullptr);
+        EXPECT_NE(model.section("s2"), nullptr);
+        EXPECT_NE(model.node("n1"), nullptr);
+        EXPECT_NE(model.node("n2"), nullptr);
+        EXPECT_EQ(n1->section(0), s1->id());
+        EXPECT_EQ(n1->section(1), ID_NULL);
+        EXPECT_EQ(n2->section(0), ID_NULL);
+        EXPECT_EQ(n2->section(1), s1->id());
+        EXPECT_EQ(s1->start(), n1->id());
+        EXPECT_EQ(s1->end(), n2->id());
+        EXPECT_EQ(s2->start(), ID_NULL);
+        EXPECT_EQ(s2->end(), ID_NULL);
+    };
+    checkStatusQuo();
+
+    auto res = model.unlink("s3");
+    EXPECT_EQ(res, Model::UnlinkResult::NOT_FOUND);
+    checkStatusQuo();
+
+    res = model.unlink("s2");
+    EXPECT_EQ(res, Model::UnlinkResult::NOT_LINKED);
+    checkStatusQuo();
+}
+
+TEST(Model, Unlink) {
+    Model model;
+    EXPECT_TRUE(!!model.newSection("s1", false));
+    EXPECT_TRUE(!!model.newSection("s2", false));
+    EXPECT_TRUE(!!model.newNode(THRU, "n1"));
+    EXPECT_TRUE(!!model.newNode(THRU, "n2"));
+    EXPECT_TRUE(!!model.link("s1", "n1", 0, "n2", 1));
+    EXPECT_TRUE(!!model.link("s2", "n1", 1, "n2", 0));
+
+    auto res = model.unlink("s1");
+
+    EXPECT_EQ(res, Model::UnlinkResult::OK);
+    auto s1 = model.section("s1");
+    auto s2 = model.section("s2");
+    auto n1 = model.node("n1");
+    auto n2 = model.node("n2");
+    EXPECT_NE(s1, nullptr);
+    EXPECT_NE(s2, nullptr);
+    EXPECT_NE(n1, nullptr);
+    EXPECT_NE(n2, nullptr);
+    EXPECT_EQ(n1->section(0), ID_NULL);
+    EXPECT_EQ(n1->section(1), s2->id());
+    EXPECT_EQ(n2->section(0), s2->id());
+    EXPECT_EQ(n2->section(1), ID_NULL);
+    EXPECT_EQ(s1->start(), ID_NULL);
+    EXPECT_EQ(s1->end(), ID_NULL);
+    EXPECT_EQ(s2->start(), n1->id());
+    EXPECT_EQ(s2->end(), n2->id());
 }

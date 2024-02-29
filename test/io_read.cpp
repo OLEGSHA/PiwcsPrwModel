@@ -243,13 +243,14 @@ MUST_FAIL_TEST(UnusedSectionData, R"json([
 TEST(IoRead, BadLinks) {
     // Base variant
 
-    MUST_PASS("Basic self-link", R"json([
+    MUST_PASS("Basic link", R"json([
         {
-            "n1": { "type":"THRU" }
+            "n1": { "type":"THRU" },
+            "n2": { "type":"THRU" }
         },
         {
             "s1": { "startNode":"n1", "startSlot":0,
-                    "endNode":"n1", "endSlot":1 }
+                    "endNode":"n2", "endSlot":1 }
         }
     ])json");
 
@@ -257,27 +258,30 @@ TEST(IoRead, BadLinks) {
 
     MUST_FAIL("startNode missing", R"json([
         {
-            "n1": { "type":"THRU" }
+            "n1": { "type":"THRU" },
+            "n2": { "type":"THRU" }
         },
         {
             "s1": {                   "startSlot":0,
-                    "endNode":"n1", "endSlot":1 }
+                    "endNode":"n2", "endSlot":1 }
         }
     ])json");
 
     MUST_FAIL("startSlot missing", R"json([
         {
-            "n1": { "type":"THRU" }
+            "n1": { "type":"THRU" },
+            "n2": { "type":"THRU" }
         },
         {
             "s1": { "startNode":"n1",
-                    "endNode":"n1", "endSlot":1 }
+                    "endNode":"n2", "endSlot":1 }
         }
     ])json");
 
     MUST_FAIL("endNode missing", R"json([
         {
-            "n1": { "type":"THRU" }
+            "n1": { "type":"THRU" },
+            "n2": { "type":"THRU" }
         },
         {
             "s1": { "startNode":"n1", "startSlot":0,
@@ -287,11 +291,12 @@ TEST(IoRead, BadLinks) {
 
     MUST_FAIL("endSlot missing", R"json([
         {
-            "n1": { "type":"THRU" }
+            "n1": { "type":"THRU" },
+            "n2": { "type":"THRU" }
         },
         {
             "s1": { "startNode":"n1", "startSlot":0,
-                    "endNode":"n1"              }
+                    "endNode":"n2"              }
         }
     ])json");
 
@@ -299,7 +304,8 @@ TEST(IoRead, BadLinks) {
 
     MUST_FAIL("stray startNode", R"json([
         {
-            "n1": { "type":"THRU" }
+            "n1": { "type":"THRU" },
+            "n2": { "type":"THRU" }
         },
         {
             "s1": { "startNode":"n1" }
@@ -308,7 +314,8 @@ TEST(IoRead, BadLinks) {
 
     MUST_FAIL("stray startSlot", R"json([
         {
-            "n1": { "type":"THRU" }
+            "n1": { "type":"THRU" },
+            "n2": { "type":"THRU" }
         },
         {
             "s1": { "startSlot":0 }
@@ -317,19 +324,32 @@ TEST(IoRead, BadLinks) {
 
     MUST_FAIL("stray endNode", R"json([
         {
-            "n1": { "type":"THRU" }
+            "n1": { "type":"THRU" },
+            "n2": { "type":"THRU" }
         },
         {
-            "s1": { "endNode":"n1" }
+            "s1": { "endNode":"n2" }
         }
     ])json");
 
     MUST_FAIL("stray endSlot", R"json([
         {
-            "n1": { "type":"THRU" }
+            "n1": { "type":"THRU" },
+            "n2": { "type":"THRU" }
         },
         {
             "s1": { "endSlot":1 }
         }
     ])json");
 }
+
+MUST_FAIL_TEST(IllegalLink, R"json([
+    {
+        "n1": { "type":"THRU" },
+        "n2": { "type":"THRU" }
+    },
+    {
+        "s1": { "startNode":"n1", "startSlot":0,
+                "endNode":"n9", "endSlot":1 }
+    }
+])json")
