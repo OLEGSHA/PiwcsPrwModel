@@ -10,6 +10,16 @@ Node::Node(NodeType type, Identifier id)
 
 SlotId Node::sectionCount() const { return type()->slotCount; };
 
+SlotId Node::slotOf(IdRef sectionId) const {
+    std::size_t count = sectionCount();
+    for (SlotId i = 0; i < count; i++) {
+        if (m_slots[i] == sectionId) {
+            return i;
+        }
+    }
+    return SLOT_INVALID;
+}
+
 bool Node::couldTraverse(SlotId from, SlotId to) const {
     const auto &type = *this->type();
     if (from >= type.slotCount || to >= type.slotCount) {

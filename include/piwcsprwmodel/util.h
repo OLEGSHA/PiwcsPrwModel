@@ -77,6 +77,11 @@ struct IdHash {
  */
 using SlotId = std::size_t;
 
+/**
+ * An invalid slot ID.
+ */
+static constexpr SlotId SLOT_INVALID = 255;
+
 } // namespace piwcs::prw
 
 #endif // PIWCS_PRW_MODEL_UTIL

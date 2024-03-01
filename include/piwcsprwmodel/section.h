@@ -94,7 +94,7 @@ class Section {
      * @return the ID of the Node in the slot with index `index`, `ID_NULL` if
      * the slot is empty, or `ID_INVALID` if the slot does not exist
      */
-    [[nodiscard]] IdRef node(size_t index) const {
+    [[nodiscard]] IdRef node(SlotId index) const {
         switch (index) {
         case 0:
             return start();
@@ -121,7 +121,7 @@ class Section {
      * @return `true` if and only if travel is possible and allowed in given
      * direction
      */
-    [[nodiscard]] bool canTraverse(size_t from, size_t to) const {
+    [[nodiscard]] bool canTraverse(SlotId from, SlotId to) const {
         return (from == 0 && to == 1) || (isBidir() && from == 1 && to == 0);
     }
 
@@ -131,7 +131,7 @@ class Section {
      * Length can be zero exactly, meaning it is negligeable. Otherwise it
      * should be significantly greater than zero.
      *
-     * @return the lenght of this section
+     * @return the length of this section
      */
     [[nodiscard]] Length length() const { return m_length; }
 

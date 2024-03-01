@@ -154,3 +154,24 @@ TEST(CrossingNode, AllowedRoutes) {
     EXPECT_FALSE(node.couldTraverse(3, 0));
     EXPECT_FALSE(node.couldTraverse(3, 1));
 }
+
+TEST(Nodes, SlotOf) {
+    Model model;
+    model.newNode(CROSSING, "n1");
+    model.newNode(CROSSING, "n2");
+    model.newSection("s1", false);
+    model.newSection("s2", false);
+    model.newSection("s3", false);
+    model.link("s1", "n1", 0, "n2", 3);
+    model.link("s2", "n1", 1, "n2", 2);
+
+    EXPECT_EQ(model.node("n1")->slotOf("s1"), 0);
+    EXPECT_EQ(model.node("n1")->slotOf("s2"), 1);
+    EXPECT_EQ(model.node("n1")->slotOf("s3"), SLOT_INVALID);
+    EXPECT_EQ(model.node("n1")->slotOf("s4"), SLOT_INVALID);
+
+    EXPECT_EQ(model.node("n2")->slotOf("s1"), 3);
+    EXPECT_EQ(model.node("n2")->slotOf("s2"), 2);
+    EXPECT_EQ(model.node("n2")->slotOf("s3"), SLOT_INVALID);
+    EXPECT_EQ(model.node("n2")->slotOf("s4"), SLOT_INVALID);
+}

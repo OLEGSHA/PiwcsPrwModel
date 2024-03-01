@@ -18,8 +18,8 @@ Model::AddResult Model::addNode(Node node) {
     }
 
     // Check for non-null section IDs
-    size_t count = node.sectionCount();
-    for (size_t i = 0; i < count; i++) {
+    SlotId count = node.sectionCount();
+    for (SlotId i = 0; i < count; i++) {
         if (isId(node.section(i))) {
             return AddResult::HAS_REF;
         }
@@ -44,8 +44,7 @@ Model::AddResult Model::addSection(Section section) {
     // Check for duplicate destination address
     if (section.isDestination()) {
         const auto &address = section.destination()->address();
-        for (const auto &it : sections()) {
-            const auto &otherSection = it.second;
+        for (const auto &[_, otherSection] : sections()) {
             if (otherSection.isDestination() &&
                 otherSection.destination()->address() == address) {
                 return AddResult::DUPLICATE;
@@ -74,8 +73,8 @@ Model::RemoveResult Model::removeNode(IdRef id) {
 
     // Check for non-null section IDs
     // This is equivalent to searching for references to node but much faster
-    size_t count = node.sectionCount();
-    for (size_t i = 0; i < count; i++) {
+    SlotId count = node.sectionCount();
+    for (SlotId i = 0; i < count; i++) {
         if (isId(node.section(i))) {
             return RemoveResult::REFERENCED;
         }
