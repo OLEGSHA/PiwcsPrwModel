@@ -156,11 +156,25 @@ class Node {
      * Returns the ID of the section in the requested slot, `ID_NULL` if the
      * slot is not yet connected, or `ID_INVALID` if no such slot exists.
      *
+     * @param slot the slot ID to inspect
+     *
      * @return the ID of the requested section, `ID_NULL` or `ID_INVALID`
      */
     [[nodiscard]] IdRef section(SlotId slot) const {
         return slot > sectionCount() ? ID_INVALID : m_slots[slot];
     }
+
+    /**
+     * Returns the slot ID that the Section with the provided ID occupies in
+     * this Node, or `SLOT_INVALID` if the connection could not be found.
+     *
+     * Result is unspecified when `sectionId` is `ID_NULL`.
+     *
+     * @param sectionId the ID of the section to look for
+     *
+     * @return slot ID _S_ such that `section(S) == sectionId` or `SLOT_INVALID`
+     */
+    [[nodiscard]] SlotId slotOf(IdRef sectionId) const;
 
     /**
      * Determines whether travel from slot `from` to slot `to` would be possible
