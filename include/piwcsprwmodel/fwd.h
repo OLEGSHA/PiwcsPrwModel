@@ -11,7 +11,6 @@
 namespace piwcs::prw {
 
 class Node;
-class NodeSlot;
 class Destination;
 class Section;
 class Model;
