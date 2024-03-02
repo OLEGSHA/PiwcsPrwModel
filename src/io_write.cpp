@@ -2,21 +2,9 @@
 
 #include "debug.h"
 #include "nodetypeinfo.h"
-#include "string_view_writer.h"
 #include <fstream>
 #include <iostream>
 #include <minijson_writer/minijson_writer.hpp>
-
-namespace minijson {
-
-template <> struct default_value_writer<std::string_view> {
-    void operator()(std::ostream &stream, std::string_view p,
-                    minijson::writer_configuration) const {
-        write_quoted_string(stream, p);
-    }
-};
-
-} // namespace minijson
 
 namespace piwcs::prw {
 
