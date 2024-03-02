@@ -2,6 +2,7 @@
 #define PIWCS_PRW_MODEL_SECTION
 
 #include "fwd.h"
+#include "metadata.h"
 #include "util.h"
 #include <iosfwd>
 #include <memory>
@@ -25,7 +26,7 @@ namespace piwcs::prw {
  *
  * Sections, as all Model entities, are mutable objects.
  */
-class Section {
+class Section : public detail::HasMetadata {
 
   public:
     using Length = uint32_t;
@@ -172,7 +173,7 @@ class Section {
  *
  * Destinations are immutable objects.
  */
-class Destination {
+class Destination : public detail::HasMetadata {
 
   public:
     /**

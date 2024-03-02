@@ -2,6 +2,7 @@
 #define PIWCS_PRW_MODEL_NODES
 
 #include "fwd.h"
+#include "metadata.h"
 #include "util.h"
 #include <iosfwd>
 
@@ -108,7 +109,7 @@ extern const NodeType END;
  *
  * Nodes, as all Model entities, are mutable objects.
  */
-class Node {
+class Node : public detail::HasMetadata {
 
   public:
     static constexpr std::size_t MAX_SLOTS = 4;

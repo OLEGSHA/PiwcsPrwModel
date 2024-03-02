@@ -7,6 +7,7 @@ if(GTest_FOUND)
         model.cpp
         nodes.cpp
         section.cpp
+        metadata.cpp
         io_read.cpp
         io_wr.cpp
     )

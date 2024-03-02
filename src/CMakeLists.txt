@@ -2,6 +2,7 @@ add_library(piwcsprwmodel
     model.cpp
     nodes.cpp
     section.cpp
+    metadata.cpp
     util.cpp
     printing.cpp
     io_read.cpp
