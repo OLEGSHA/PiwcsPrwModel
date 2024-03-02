@@ -8,6 +8,7 @@ if(GTest_FOUND)
         nodes.cpp
         section.cpp
         io_read.cpp
+        io_wr.cpp
     )
 
     target_link_libraries(tests piwcsprwmodel)
