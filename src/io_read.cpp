@@ -58,20 +58,35 @@ void parseNode(minijson::istream_context &ctx, Model &model,
     }
 }
 
+struct Link {
+    std::optional<std::string_view> startNode{};
+    std::optional<SlotId> startSlot{};
+    std::optional<std::string_view> endNode{};
+    std::optional<SlotId> endSlot{};
+};
+
 struct DestData {
     std::string_view address{};
     std::string_view name{};
 };
 
 struct SectionData {
-    std::optional<std::string_view> startNode{};
-    std::optional<SlotId> startSlot{};
-    std::optional<std::string_view> endNode{};
-    std::optional<SlotId> endSlot{};
+    Link link{};
     bool bidir = false;
     Section::Length length = 0;
     std::unique_ptr<Destination> dest{};
 };
+
+const minijson::dispatcher linkDispatcher{
+    handler("startNode", into(&Link::startNode)),
+    handler("startSlot", into(&Link::startSlot)),
+    handler("endNode", into(&Link::endNode)),
+    handler("endSlot", into(&Link::endSlot)),
+};
+
+void parseLink(SectionData &s, value, minijson::istream_context &ctx) {
+    linkDispatcher.run(ctx, s.link);
+}
 
 const minijson::dispatcher destDispatcher{
     handler("address", into(&DestData::address)),
@@ -86,10 +101,7 @@ void parseDest(SectionData &s, value, minijson::istream_context &ctx) {
 }
 
 const minijson::dispatcher sectionDispatcher{
-    optional_handler("startNode", into(&SectionData::startNode)),
-    optional_handler("startSlot", into(&SectionData::startSlot)),
-    optional_handler("endNode", into(&SectionData::endNode)),
-    optional_handler("endSlot", into(&SectionData::endSlot)),
+    optional_handler("link", parseLink),
 
     optional_handler("bidir", into(&SectionData::bidir)),
     optional_handler("length", into(&SectionData::length)),
@@ -108,17 +120,10 @@ void parseSection(minijson::istream_context &ctx, Model &model,
         throw IllegalModelError("duplicate section ID or destination address");
     }
 
-    bool someLinkFields =
-        data.startNode || data.startSlot || data.endNode || data.endSlot;
-    bool allLinkFields =
-        data.startNode && data.startSlot && data.endNode && data.endSlot;
-
-    if (someLinkFields) {
-        if (!allLinkFields) {
-            throw IllegalModelError("linkage fields missing");
-        }
-        if (!model.link(sectionId, *data.startNode, *data.startSlot,
-                        *data.endNode, *data.endSlot)) {
+    if (data.link.startNode) {
+        const auto &l = data.link;
+        if (!model.link(sectionId, *l.startNode, *l.startSlot, *l.endNode,
+                        *l.endSlot)) {
             throw IllegalModelError("linkage inconsistency found");
         }
     }

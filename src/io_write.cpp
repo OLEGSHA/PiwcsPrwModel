@@ -34,6 +34,26 @@ void writeNodes(minijson::object_writer w, const Model &model) {
     w.close();
 }
 
+void writeLink(minijson::object_writer w, const Section &section,
+               const Model &model) {
+    const Node *start = model.node(section.start());
+    const Node *end = model.node(section.end());
+    _ASSERT(start != nullptr, "start not found");
+    _ASSERT(end != nullptr, "end not found");
+
+    SlotId startSlot = start->slotOf(section.id());
+    SlotId endSlot = end->slotOf(section.id());
+    _ASSERT(startSlot != SLOT_INVALID, "start slot not found");
+    _ASSERT(endSlot != SLOT_INVALID, "end slot not found");
+
+    w.write("startNode", section.start());
+    w.write("startSlot", startSlot);
+    w.write("endNode", section.end());
+    w.write("endSlot", endSlot);
+
+    w.close();
+}
+
 void writeDestination(minijson::object_writer w, const Destination &dest) {
     w.write("address", dest.address());
     w.write("name", dest.name());
@@ -43,20 +63,7 @@ void writeDestination(minijson::object_writer w, const Destination &dest) {
 void writeSection(minijson::object_writer w, const Section &section,
                   const Model &model) {
     if (section.start() != ID_NULL) {
-        const Node *start = model.node(section.start());
-        const Node *end = model.node(section.end());
-        _ASSERT(start != nullptr, "start not found");
-        _ASSERT(end != nullptr, "end not found");
-
-        SlotId startSlot = start->slotOf(section.id());
-        SlotId endSlot = end->slotOf(section.id());
-        _ASSERT(startSlot != SLOT_INVALID, "start slot not found");
-        _ASSERT(endSlot != SLOT_INVALID, "end slot not found");
-
-        w.write("startNode", section.start());
-        w.write("startSlot", startSlot);
-        w.write("endNode", section.end());
-        w.write("endSlot", endSlot);
+        writeLink(w.nested_object("link"), section, model);
     }
 
     if (section.isBidir()) {
