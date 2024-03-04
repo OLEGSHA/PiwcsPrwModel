@@ -10,8 +10,23 @@ namespace piwcs::prw {
 
 namespace {
 
+void writeMetadata(minijson::object_writer w, const detail::HasMetadata &obj) {
+    for (const auto &[key, value] : obj.metadata()) {
+        w.write(key.c_str(), value);
+    }
+    w.close();
+}
+
+void writeMetadataIfNecessary(minijson::object_writer &parentWriter,
+                              const detail::HasMetadata &obj) {
+    if (obj.hasMetadata()) {
+        writeMetadata(parentWriter.nested_object("metadata"), obj);
+    }
+}
+
 void writeNode(minijson::object_writer w, const Node &node) {
     w.write("type", node.type()->name);
+    writeMetadataIfNecessary(w, node);
     w.close();
 }
 
@@ -45,6 +60,7 @@ void writeLink(minijson::object_writer w, const Section &section,
 void writeDestination(minijson::object_writer w, const Destination &dest) {
     w.write("address", dest.address());
     w.write("name", dest.name());
+    writeMetadataIfNecessary(w, dest);
     w.close();
 }
 
@@ -65,6 +81,8 @@ void writeSection(minijson::object_writer w, const Section &section,
     if (section.isDestination()) {
         writeDestination(w.nested_object("dest"), *section.destination());
     }
+
+    writeMetadataIfNecessary(w, section);
 
     w.close();
 }

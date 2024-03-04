@@ -46,10 +46,12 @@ TEST(IoRead, Basic) {
     auto *n1 = model.node("n1");
     ASSERT_NE(n1, nullptr);
     ASSERT_EQ(n1->type(), THRU);
+    ASSERT_FALSE(n1->hasMetadata());
 
     auto *n2 = model.node("n2");
     ASSERT_NE(n2, nullptr);
     ASSERT_EQ(n2->type(), THRU);
+    ASSERT_FALSE(n2->hasMetadata());
 
     auto *s1 = model.section("s1");
     ASSERT_NE(s1, nullptr);
@@ -63,6 +65,7 @@ TEST(IoRead, Basic) {
     ASSERT_EQ(n2->section(1), ID_NULL);
     ASSERT_EQ(s1->start(), ID_NULL);
     ASSERT_EQ(s1->end(), ID_NULL);
+    ASSERT_FALSE(s1->hasMetadata());
 }
 
 TEST(IoRead, BasicWithLink) {
@@ -82,10 +85,12 @@ TEST(IoRead, BasicWithLink) {
     auto *n1 = model.node("n1");
     ASSERT_NE(n1, nullptr);
     ASSERT_EQ(n1->type(), THRU);
+    ASSERT_FALSE(n1->hasMetadata());
 
     auto *n2 = model.node("n2");
     ASSERT_NE(n2, nullptr);
     ASSERT_EQ(n2->type(), THRU);
+    ASSERT_FALSE(n2->hasMetadata());
 
     auto *s1 = model.section("s1");
     ASSERT_NE(s1, nullptr);
@@ -99,6 +104,7 @@ TEST(IoRead, BasicWithLink) {
     ASSERT_EQ(n2->section(1), "s1");
     ASSERT_EQ(s1->start(), "n1");
     ASSERT_EQ(s1->end(), "n2");
+    ASSERT_FALSE(s1->hasMetadata());
 }
 
 TEST(IoRead, Empty) {
@@ -111,7 +117,13 @@ TEST(IoRead, Maximal) {
     Model model = _read(R"json([
         {
             "n1": { "type":"THRU" },
-            "n2": { "type":"THRU" }
+            "n2": {
+                "type":"THRU",
+                "metadata": {
+                    "n2-key1": "apple",
+                    "n2-key2": "orange"
+                }
+            }
         },
         {
             "s1": {
@@ -125,7 +137,15 @@ TEST(IoRead, Maximal) {
                 "bidir": true,
                 "dest": {
                     "address": "1.0.1",
-                    "name": "My Destination"
+                    "name": "My Destination",
+                    "metadata": {
+                        "d-key1": "grape",
+                        "d-key2": "banana"
+                    }
+                },
+                "metadata": {
+                    "s1-key1": "tomato",
+                    "s1-key2": "papaya"
                 }
             }
         }
@@ -134,10 +154,15 @@ TEST(IoRead, Maximal) {
     auto *n1 = model.node("n1");
     ASSERT_NE(n1, nullptr);
     ASSERT_EQ(n1->type(), THRU);
+    ASSERT_FALSE(n1->hasMetadata());
 
     auto *n2 = model.node("n2");
     ASSERT_NE(n2, nullptr);
     ASSERT_EQ(n2->type(), THRU);
+    ASSERT_TRUE(n2->hasMetadata());
+    ASSERT_EQ(n2->metadata().size(), 2);
+    ASSERT_EQ(n2->metadata("n2-key1"), "apple");
+    ASSERT_EQ(n2->metadata("n2-key2"), "orange");
 
     auto *s1 = model.section("s1");
     ASSERT_NE(s1, nullptr);
@@ -146,6 +171,10 @@ TEST(IoRead, Maximal) {
     ASSERT_TRUE(s1->isDestination());
     ASSERT_EQ(s1->destination()->address(), "1.0.1");
     ASSERT_EQ(s1->destination()->name(), "My Destination");
+    ASSERT_TRUE(s1->destination()->hasMetadata());
+    ASSERT_EQ(s1->destination()->metadata().size(), 2);
+    ASSERT_EQ(s1->destination()->metadata("d-key1"), "grape");
+    ASSERT_EQ(s1->destination()->metadata("d-key2"), "banana");
 
     ASSERT_EQ(n1->section(0), "s1");
     ASSERT_EQ(n1->section(1), ID_NULL);
@@ -153,6 +182,10 @@ TEST(IoRead, Maximal) {
     ASSERT_EQ(n2->section(1), "s1");
     ASSERT_EQ(s1->start(), "n1");
     ASSERT_EQ(s1->end(), "n2");
+    ASSERT_TRUE(s1->hasMetadata());
+    ASSERT_EQ(s1->metadata().size(), 2);
+    ASSERT_EQ(s1->metadata("s1-key1"), "tomato");
+    ASSERT_EQ(s1->metadata("s1-key2"), "papaya");
 }
 
 MUST_FAIL_TEST(NotJson, R"json(
@@ -379,3 +412,77 @@ MUST_FAIL_TEST(IllegalLink, R"json([
                 "endNode":"n9", "endSlot":1 }
     }
 ])json")
+
+TEST(IoRead, Metadata) {
+    // Base variant
+
+    MUST_PASS("Basic metadata", R"json([
+        {},
+        {
+            "s1": {
+                "metadata": {
+                    "key1": "value"
+                }
+            }
+        }
+    ])json");
+
+    // Empty metadata
+
+    MUST_PASS("Empty metadata", R"json([
+        {},
+        {
+            "s1": {
+                "metadata": {}
+            }
+        }
+    ])json");
+
+    // Not an object
+
+    MUST_FAIL("metadata is not an object", R"json([
+        {},
+        {
+            "s1": {
+                "metadata": [
+                    "value"
+                ]
+            }
+        }
+    ])json");
+
+    // Bad values
+
+    MUST_FAIL("value is a number", R"json([
+        {},
+        {
+            "s1": {
+                "metadata": {
+                    "key1": 123
+                }
+            }
+        }
+    ])json");
+
+    MUST_FAIL("value is an object", R"json([
+        {},
+        {
+            "s1": {
+                "metadata": {
+                    "key1": { "subkey": "subvalue" }
+                }
+            }
+        }
+    ])json");
+
+    MUST_FAIL("value is null", R"json([
+        {},
+        {
+            "s1": {
+                "metadata": {
+                    "key1": null
+                }
+            }
+        }
+    ])json");
+}

@@ -18,7 +18,26 @@ template <typename S, typename V> auto into(V S::*dest) {
     return [dest](S &s, value v) { v.to(s.*dest); };
 }
 
-struct NodeData {
+struct MetadataData {
+    std::optional<Metadata> metadata;
+};
+
+void parseMetadata(MetadataData &md, value, minijson::istream_context &ctx) {
+    minijson::parse_object(ctx, [&](std::string_view key, value v) {
+        if (!md.metadata) {
+            md.metadata.emplace();
+        }
+        (*md.metadata)[Identifier(key)] = v.as<std::string_view>();
+    });
+}
+
+void installMetadata(detail::HasMetadata &target, MetadataData &source) {
+    if (source.metadata) {
+        target.metadata() = std::move(*source.metadata);
+    }
+}
+
+struct NodeData : public MetadataData {
     NodeType type{};
 };
 
@@ -45,6 +64,7 @@ void parseNodeType(NodeData &nd, value v) {
 
 const minijson::dispatcher nodeDispatcher{
     handler("type", parseNodeType),
+    optional_handler("metadata", parseMetadata),
 };
 
 void parseNode(minijson::istream_context &ctx, Model &model,
@@ -53,7 +73,10 @@ void parseNode(minijson::istream_context &ctx, Model &model,
 
     nodeDispatcher.run(ctx, data);
 
-    if (!model.newNode(data.type, std::move(nodeId))) {
+    Node node(data.type, std::move(nodeId));
+    installMetadata(node, data);
+
+    if (!model.addNode(std::move(node))) {
         throw IllegalModelError("duplicate node ID");
     }
 }
@@ -65,12 +88,12 @@ struct Link {
     std::optional<SlotId> endSlot{};
 };
 
-struct DestData {
+struct DestData : public MetadataData {
     std::string_view address{};
     std::string_view name{};
 };
 
-struct SectionData {
+struct SectionData : public MetadataData {
     Link link{};
     bool bidir = false;
     Section::Length length = 0;
@@ -91,13 +114,16 @@ void parseLink(SectionData &s, value, minijson::istream_context &ctx) {
 const minijson::dispatcher destDispatcher{
     handler("address", into(&DestData::address)),
     handler("name", into(&DestData::name)),
+    optional_handler("metadata", parseMetadata),
 };
 
 void parseDest(SectionData &s, value, minijson::istream_context &ctx) {
     DestData data;
     destDispatcher.run(ctx, data);
-    s.dest = std::make_unique<Destination>(Destination::Address(data.address),
+    auto d = std::make_unique<Destination>(Destination::Address(data.address),
                                            Destination::Name(data.name));
+    installMetadata(*d, data);
+    s.dest = std::move(d);
 }
 
 const minijson::dispatcher sectionDispatcher{
@@ -107,6 +133,8 @@ const minijson::dispatcher sectionDispatcher{
     optional_handler("length", into(&SectionData::length)),
 
     optional_handler("dest", parseDest),
+
+    optional_handler("metadata", parseMetadata),
 };
 
 void parseSection(minijson::istream_context &ctx, Model &model,
@@ -115,8 +143,10 @@ void parseSection(minijson::istream_context &ctx, Model &model,
 
     sectionDispatcher.run(ctx, data);
 
-    if (!model.newSection(sectionId, data.bidir, data.length,
-                          std::move(data.dest))) {
+    Section section(sectionId, data.bidir, data.length, std::move(data.dest));
+    installMetadata(section, data);
+
+    if (!model.addSection(std::move(section))) {
         throw IllegalModelError("duplicate section ID or destination address");
     }
 

@@ -9,6 +9,14 @@ using namespace piwcs::prw;
 namespace {
 
 void modelsMustBeEqual(const Model &a, const Model &b) {
+    auto metaMustBeEqual = [](const detail::HasMetadata &am,
+                              const detail::HasMetadata &bm) {
+        EXPECT_EQ(am.hasMetadata(), bm.hasMetadata());
+        if (am.hasMetadata()) {
+            EXPECT_EQ(am.metadata(), bm.metadata());
+        }
+    };
+
     EXPECT_EQ(a.nodes().size(), b.nodes().size());
     EXPECT_EQ(a.sections().size(), b.sections().size());
 
@@ -19,6 +27,7 @@ void modelsMustBeEqual(const Model &a, const Model &b) {
         for (SlotId i = 0; i < an.sectionCount(); i++) {
             EXPECT_EQ(an.section(i), bn->section(i));
         }
+        metaMustBeEqual(an, *bn);
     }
 
     for (const auto &[id, as] : a.sections()) {
@@ -34,11 +43,15 @@ void modelsMustBeEqual(const Model &a, const Model &b) {
         EXPECT_EQ(as.isDestination(), bs->isDestination());
         if (as.isDestination()) {
             const auto *ad = as.destination();
-            const auto *bd = as.destination();
+            const auto *bd = bs->destination();
 
             EXPECT_EQ(ad->address(), bd->address());
             EXPECT_EQ(ad->name(), bd->name());
+
+            metaMustBeEqual(*ad, *bd);
         }
+
+        metaMustBeEqual(as, *bs);
     }
 }
 
@@ -82,8 +95,17 @@ TEST(IoWriteRead, Maximal) {
     model.newNode(CROSSING, "n5");
     model.newNode(END, "n6");
 
+    model.node("n5")->metadata("n5-key1") = "apple";
+    model.node("n5")->metadata("n5-key2") = "orange";
+
     model.newSection("s1", true, 42,
                      std::make_unique<Destination>("1.0.1", "My Name"));
+
+    model.section("s1")->metadata("s1-key1") = "grape";
+    model.section("s1")->metadata("s1-key2") = "banana";
+
+    model.section("s1")->destination()->metadata("d-key1") = "tomato";
+    model.section("s1")->destination()->metadata("d-key2") = "papaya";
 
     model.link("s1", "n1", 0, "n2", 1);
 
