@@ -10,35 +10,40 @@ namespace piwcs::prw {
 
 namespace {
 
-void writeMetadata(minijson::object_writer w, const detail::HasMetadata &obj) {
+void writeMetadata(minijson::object_writer &pw,
+                   const detail::HasMetadata &obj) {
+    if (!obj.hasMetadata()) {
+        return;
+    }
+
+    auto w = pw.nested_object("metadata");
     for (const auto &[key, value] : obj.metadata()) {
         w.write(key.c_str(), value);
     }
-    w.close();
 }
 
-void writeMetadataIfNecessary(minijson::object_writer &parentWriter,
-                              const detail::HasMetadata &obj) {
-    if (obj.hasMetadata()) {
-        writeMetadata(parentWriter.nested_object("metadata"), obj);
-    }
-}
-
-void writeNode(minijson::object_writer w, const Node &node) {
+void writeNode(minijson::object_writer &pw, const Node &node, const char *id) {
+    auto w = pw.nested_object(id); // TODO s/id/section.id()/
     w.write("type", node.type()->name);
-    writeMetadataIfNecessary(w, node);
-    w.close();
+    writeMetadata(w, node);
 }
 
-void writeNodes(minijson::object_writer w, const Model &model) {
+void writeNodes(minijson::array_writer &pw, const Model &model) {
+    auto w = pw.nested_object();
     for (const auto &[nodeId, node] : model.nodes()) {
-        writeNode(w.nested_object(nodeId.c_str()), node);
+        writeNode(w, node, nodeId.c_str());
     }
-    w.close();
 }
 
-void writeLink(minijson::object_writer w, const Section &section,
+void writeLink(minijson::object_writer &pw, const Section &section,
                const Model &model) {
+    if (section.start() == ID_NULL) {
+        _ASSERT(section.end() == ID_NULL, "start == null, end != null");
+        return;
+    }
+
+    auto w = pw.nested_object("link");
+
     const Node *start = model.node(section.start());
     const Node *end = model.node(section.end());
     _ASSERT(start != nullptr, "start not found");
@@ -53,22 +58,26 @@ void writeLink(minijson::object_writer w, const Section &section,
     w.write("startSlot", startSlot);
     w.write("endNode", section.end());
     w.write("endSlot", endSlot);
-
-    w.close();
 }
 
-void writeDestination(minijson::object_writer w, const Destination &dest) {
+void writeDestination(minijson::object_writer &pw, const Section &section) {
+    if (!section.isDestination()) {
+        return;
+    }
+
+    const auto &dest = *section.destination();
+
+    auto w = pw.nested_object("dest");
     w.write("address", dest.address());
     w.write("name", dest.name());
-    writeMetadataIfNecessary(w, dest);
-    w.close();
+    writeMetadata(w, dest);
 }
 
-void writeSection(minijson::object_writer w, const Section &section,
-                  const Model &model) {
-    if (section.start() != ID_NULL) {
-        writeLink(w.nested_object("link"), section, model);
-    }
+void writeSection(minijson::object_writer &pw, const Section &section,
+                  const char *id, const Model &model) {
+    auto w = pw.nested_object(id); // TODO s/id/section.id()/
+
+    writeLink(w, section, model);
 
     if (section.isBidir()) {
         w.write("bidir", true);
@@ -78,20 +87,15 @@ void writeSection(minijson::object_writer w, const Section &section,
         w.write("length", section.length());
     }
 
-    if (section.isDestination()) {
-        writeDestination(w.nested_object("dest"), *section.destination());
-    }
-
-    writeMetadataIfNecessary(w, section);
-
-    w.close();
+    writeDestination(w, section);
+    writeMetadata(w, section);
 }
 
-void writeSections(minijson::object_writer w, const Model &model) {
+void writeSections(minijson::array_writer &pw, const Model &model) {
+    auto w = pw.nested_object();
     for (const auto &[sectionId, section] : model.sections()) {
-        writeSection(w.nested_object(sectionId.c_str()), section, model);
+        writeSection(w, section, sectionId.c_str(), model);
     }
-    w.close();
 }
 
 } // namespace
@@ -100,10 +104,8 @@ void writeModel(std::ostream &out, const Model &model) {
     minijson::array_writer w(
         out, minijson::writer_configuration().pretty_printing(true));
 
-    writeNodes(w.nested_object(), model);
-    writeSections(w.nested_object(), model);
-
-    w.close();
+    writeNodes(w, model);
+    writeSections(w, model);
 }
 
 void writeModel(const std::string &filename, const Model &model) {
