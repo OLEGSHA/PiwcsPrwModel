@@ -22,8 +22,19 @@ namespace piwcs::prw {
  */
 class IllegalModelError : public std::runtime_error {
   public:
+    /**
+     * Constructs a new IllegalModelError.
+     *
+     * @param what_arg an explanation
+     */
     IllegalModelError(const std::string &what_arg)
         : std::runtime_error(what_arg) {}
+
+    /**
+     * Constructs a new IllegalModelError.
+     *
+     * @param what_arg an explanation
+     */
     IllegalModelError(const char *what_arg) : std::runtime_error(what_arg) {}
 };
 
@@ -32,8 +43,19 @@ class IllegalModelError : public std::runtime_error {
  */
 class InvalidFormatError : public std::runtime_error {
   public:
+    /**
+     * Constructs a new InvalidFormatError.
+     *
+     * @param what_arg an explanation
+     */
     InvalidFormatError(const std::string &what_arg)
         : std::runtime_error(what_arg) {}
+
+    /**
+     * Constructs a new InvalidFormatError.
+     *
+     * @param what_arg an explanation
+     */
     InvalidFormatError(const char *what_arg) : std::runtime_error(what_arg) {}
 };
 

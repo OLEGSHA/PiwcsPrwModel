@@ -29,6 +29,9 @@ namespace piwcs::prw {
 class Section : public detail::HasMetadata {
 
   public:
+    /**
+     * Type alias for Section length. This is a numeric type.
+     */
     using Length = uint32_t;
 
   private:

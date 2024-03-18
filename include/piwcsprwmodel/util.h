@@ -59,16 +59,48 @@ bool isIdOrNull(IdRef);
 bool isId(IdRef);
 
 /**
- * Allow Identifiers to be hash-transparent with IdRef and `const char *`;
+ * Allow Identifiers to be hash-transparent with IdRef and `const char *`.
+ *
+ * This hash uses `std::hash&lt;std::string_view&gt;` internally.
  */
 struct IdHash {
+    /**
+     * Hash type used internally.
+     */
     using hash_type = std::hash<std::string_view>;
+
+    /**
+     * This hash is transparent and so makes heterogeneous lookup possible.
+     */
     using is_transparent = void;
 
+    /**
+     * Computes the hash of a C-string.
+     *
+     * @param str the string to hash
+     *
+     * @return the hash
+     */
     std::size_t operator()(const char *str) const { return hash_type{}(str); }
+
+    /**
+     * Computes the hash of an identifier (an std::string).
+     *
+     * @param str the string to hash
+     *
+     * @return the hash
+     */
     std::size_t operator()(const Identifier &str) const {
         return hash_type{}(str);
     }
+
+    /**
+     * Computes the hash of an identifier reference (an std::string_view).
+     *
+     * @param str the string to hash
+     *
+     * @return the hash
+     */
     std::size_t operator()(IdRef str) const { return hash_type{}(str); }
 };
 

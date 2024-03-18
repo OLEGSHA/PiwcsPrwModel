@@ -112,6 +112,9 @@ extern const NodeType END;
 class Node : public detail::HasMetadata {
 
   public:
+    /**
+     * Maximum slot count.
+     */
     static constexpr std::size_t MAX_SLOTS = 4;
 
   private:

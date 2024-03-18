@@ -21,6 +21,9 @@ using Metadata = IdMap<std::string>;
 
 namespace detail {
 
+/**
+ * A base class for objects that may have metadata.
+ */
 class HasMetadata {
 
   private:

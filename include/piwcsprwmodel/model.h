@@ -108,7 +108,7 @@ class Model {
      * (`DUPLICATE`), or if the node references any entities (`HAS_REF`). Should
      * addition fail, all objects remain valid and no change is made.
      *
-     * @param node the Node to add
+     * @param args the arguments for a Node constructor
      *
      * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
      */
@@ -125,7 +125,7 @@ class Model {
      * references any entities (`HAS_REF`). Should addition fail, all objects
      * remain valid and no change is made.
      *
-     * @param node the Section to add
+     * @param section the Section to add
      *
      * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
      */
@@ -140,7 +140,7 @@ class Model {
      * references any entities (`HAS_REF`). Should addition fail, all objects
      * remain valid and no change is made.
      *
-     * @param node the Section to add
+     * @param args the arguments for a Section constructor
      *
      * @return `OK` upon success, `DUPLICATE` or `UNKNOWN_REF` upon failure
      */
@@ -330,12 +330,33 @@ class Model {
     Section *section(IdRef id);
 };
 
+/**
+ * Checks for a non-OK result.
+ *
+ * @param r the result value to check
+ *
+ * @return true when r is not OK
+ */
 inline bool operator!(Model::AddResult r) { return r != Model::AddResult::OK; }
 
+/**
+ * Checks for a non-OK result.
+ *
+ * @param r the result value to check
+ *
+ * @return true when r is not OK
+ */
 inline bool operator!(Model::RemoveResult r) {
     return r != Model::RemoveResult::OK;
 }
 
+/**
+ * Checks for a non-OK result.
+ *
+ * @param r the result value to check
+ *
+ * @return true when r is not OK
+ */
 inline bool operator!(Model::LinkResult r) {
     return r != Model::LinkResult::OK;
 }
