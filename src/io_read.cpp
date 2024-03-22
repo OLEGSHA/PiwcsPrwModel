@@ -95,7 +95,7 @@ struct DestData : public MetadataData {
 
 struct SectionData : public MetadataData {
     Link link{};
-    bool bidir = false;
+    Section::AllowedTravel dir = Section::AllowedTravel::UNIDIR;
     Section::Length length = 0;
     std::unique_ptr<Destination> dest{};
 };
@@ -128,12 +128,9 @@ void parseDest(SectionData &s, value, minijson::istream_context &ctx) {
 
 const minijson::dispatcher sectionDispatcher{
     optional_handler("link", parseLink),
-
-    optional_handler("bidir", into(&SectionData::bidir)),
+    optional_handler("dir", into(&SectionData::dir)),
     optional_handler("length", into(&SectionData::length)),
-
     optional_handler("dest", parseDest),
-
     optional_handler("metadata", parseMetadata),
 };
 
@@ -143,7 +140,7 @@ void parseSection(minijson::istream_context &ctx, Model &model,
 
     sectionDispatcher.run(ctx, data);
 
-    Section section(sectionId, data.bidir, data.length, std::move(data.dest));
+    Section section(sectionId, data.dir, data.length, std::move(data.dest));
     installMetadata(section, data);
 
     if (!model.addSection(std::move(section))) {
@@ -221,3 +218,29 @@ Model readModel(const std::string &filename) {
 }
 
 } // namespace piwcs::prw
+
+namespace minijson {
+
+using namespace piwcs::prw;
+
+template <> struct value_as<Section::AllowedTravel> {
+    Section::AllowedTravel operator()(const value v) const {
+        if (v.type() != String) {
+            throw InvalidFormatError(
+                "could not convert JSON value to Section::AllowedTravel");
+        }
+
+        if (v.raw() == "NONE") {
+            return Section::AllowedTravel::NONE;
+        }
+        if (v.raw() == "UNIDIR") {
+            return Section::AllowedTravel::UNIDIR;
+        }
+        if (v.raw() == "BIDIR") {
+            return Section::AllowedTravel::BIDIR;
+        }
+        throw InvalidFormatError("unknown directionality");
+    }
+};
+
+} // namespace minijson

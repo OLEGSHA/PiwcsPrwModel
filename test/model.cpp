@@ -74,19 +74,19 @@ TEST(Model, RemoveNode) {
 TEST(Model, AddSection) {
     Model model;
 
-    auto res = model.newSection("123", false);
+    auto res = model.newSection("123");
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.newSection(ID_INVALID, false);
+    res = model.newSection(ID_INVALID);
     EXPECT_EQ(res, Model::AddResult::BAD_ID);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.newSection("123", false);
+    res = model.newSection("123");
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.newSection("456", false);
+    res = model.newSection("456");
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 2);
 }
@@ -94,17 +94,18 @@ TEST(Model, AddSection) {
 TEST(Model, AddSectionWithDestination) {
     Model model;
 
-    auto res = model.newSection(
-        "123", false, 0, std::make_unique<Destination>("1.0.0", "Name1"));
+    auto res =
+        model.newSection("123", Section::AllowedTravel::UNIDIR, 0,
+                         std::make_unique<Destination>("1.0.0", "Name1"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.newSection("456", false, 0,
+    res = model.newSection("456", Section::AllowedTravel::UNIDIR, 0,
                            std::make_unique<Destination>("1.0.1", "Name1"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 2);
 
-    res = model.newSection("789", false, 0,
+    res = model.newSection("789", Section::AllowedTravel::UNIDIR, 0,
                            std::make_unique<Destination>("1.0.1", "Name1"));
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 2);
@@ -113,8 +114,8 @@ TEST(Model, AddSectionWithDestination) {
 TEST(Model, FindSection) {
     Model model;
 
-    model.newSection("123", false);
-    model.newSection("456", false);
+    model.newSection("123");
+    model.newSection("456");
 
     const Section *section = model.section("123");
     EXPECT_NE(section, nullptr);
@@ -127,7 +128,7 @@ TEST(Model, FindSection) {
 TEST(Model, RemoveSection) {
     Model model;
 
-    model.newSection("123", false);
+    model.newSection("123");
 
     auto res = model.removeSection("000");
     EXPECT_EQ(res, Model::RemoveResult::NOT_FOUND);
@@ -140,8 +141,8 @@ TEST(Model, RemoveSection) {
 
 TEST(Model, Link) {
     Model model;
-    EXPECT_TRUE(!!model.newSection("s1", false));
-    EXPECT_TRUE(!!model.newSection("s2", false));
+    EXPECT_TRUE(!!model.newSection("s1"));
+    EXPECT_TRUE(!!model.newSection("s2"));
     EXPECT_TRUE(!!model.newNode(THRU, "n1"));
     EXPECT_TRUE(!!model.newNode(THRU, "n2"));
 
@@ -213,7 +214,7 @@ TEST(Model, Link) {
 
 TEST(Model, RemoveLinked) {
     Model model;
-    EXPECT_TRUE(!!model.newSection("s1", false));
+    EXPECT_TRUE(!!model.newSection("s1"));
     EXPECT_TRUE(!!model.newNode(THRU, "n1"));
     EXPECT_TRUE(!!model.newNode(THRU, "n2"));
     EXPECT_TRUE(!!model.link("s1", "n1", 0, "n2", 1));
@@ -249,8 +250,8 @@ TEST(Model, RemoveLinked) {
 
 TEST(Model, UnlinkFailure) {
     Model model;
-    EXPECT_TRUE(!!model.newSection("s1", false));
-    EXPECT_TRUE(!!model.newSection("s2", false));
+    EXPECT_TRUE(!!model.newSection("s1"));
+    EXPECT_TRUE(!!model.newSection("s2"));
     EXPECT_TRUE(!!model.newNode(THRU, "n1"));
     EXPECT_TRUE(!!model.newNode(THRU, "n2"));
     EXPECT_TRUE(!!model.link("s1", "n1", 0, "n2", 1));
@@ -286,8 +287,8 @@ TEST(Model, UnlinkFailure) {
 
 TEST(Model, Unlink) {
     Model model;
-    EXPECT_TRUE(!!model.newSection("s1", false));
-    EXPECT_TRUE(!!model.newSection("s2", false));
+    EXPECT_TRUE(!!model.newSection("s1"));
+    EXPECT_TRUE(!!model.newSection("s2"));
     EXPECT_TRUE(!!model.newNode(THRU, "n1"));
     EXPECT_TRUE(!!model.newNode(THRU, "n2"));
     EXPECT_TRUE(!!model.link("s1", "n1", 0, "n2", 1));

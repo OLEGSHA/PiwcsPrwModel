@@ -34,12 +34,32 @@ class Section : public detail::HasMetadata {
      */
     using Length = uint32_t;
 
+    /**
+     * Allowed travel directions for routed trains.
+     */
+    enum class AllowedTravel {
+        /**
+         * Travel of routed trains through this Section is disallowed.
+         */
+        NONE,
+
+        /**
+         * Routed trains may only proceed from start to end.
+         */
+        UNIDIR,
+
+        /**
+         * Routed trains may proceed from start to end or in reverse.
+         */
+        BIDIR
+    };
+
   private:
     Identifier m_id;
 
     Identifier m_start;
     Identifier m_end;
-    bool m_bidirectional;
+    AllowedTravel m_dir;
 
     Length m_length;
 
@@ -47,11 +67,26 @@ class Section : public detail::HasMetadata {
 
   public:
     /**
-     * Constructs a new Section with the given ID, directionality, and,
-     * optionally, length, destination data.
+     * Constructs a new Section with the given ID, directionality, length and,
+     * optionally, destination data.
+     *
+     * @param id ID of the section
+     * @param dir directionality of the section
+     * @param length length of the section
+     * @param dest destination data for this section or `nullptr`
      */
-    Section(Identifier, bool isBidir, Length length = 0,
-            std::unique_ptr<Destination> dest = nullptr);
+    Section(Identifier id, AllowedTravel dir, Length length,
+            std::unique_ptr<Destination> dest);
+
+    /**
+     * Consturcts a new unidirectional Section with the given ID.
+     *
+     * The length property of the new Section is 0. It is not a destination.
+     *
+     * @param id ID of the section
+     */
+    Section(Identifier id)
+        : Section(std::move(id), AllowedTravel::UNIDIR, 0, nullptr) {}
 
     /**
      * Returns the Identifier of this Section.
@@ -79,12 +114,38 @@ class Section : public detail::HasMetadata {
     [[nodiscard]] IdRef end() const { return m_end; }
 
     /**
+     * Returns the directionality of this Section for routed trains.
+     *
+     * @return allowed travel directions
+     */
+    [[nodiscard]] AllowedTravel dir() const { return m_dir; }
+
+    /**
      * Returns `true` iff the Section is bidirectional, i.e. allows travel from
-     * end to start.
+     * start to end and from end to start.
      *
      * @return whether this Section is bidirectional
      */
-    [[nodiscard]] bool isBidir() const { return m_bidirectional; }
+    [[nodiscard]] bool isBidir() const { return m_dir == AllowedTravel::BIDIR; }
+
+    /**
+     * Returns `true` iff the Section is unidirectional, i.e. allows travel from
+     * start to end.
+     *
+     * @return whether this Section is unidirectional
+     */
+    [[nodiscard]] bool isUnidir() const {
+        return m_dir == AllowedTravel::UNIDIR;
+    }
+
+    /**
+     * Returns `true` iff the Section allows the travel of routed trains.
+     *
+     * @return whether this Section is unidirectional or bidirectional
+     */
+    [[nodiscard]] bool allowsTravel() const {
+        return m_dir != AllowedTravel::NONE;
+    }
 
     /**
      * Returns the ID of the node at the given index. This is a convenience
@@ -115,10 +176,6 @@ class Section : public detail::HasMetadata {
      *
      * See @ref Section::node for layout.
      *
-     * Travel is always allowed from 0 to 1. If this Section is bidirectional,
-     * travel is additionally allowed from 1 to 0. All other inputs return
-     * `false`.
-     *
      * @param from index of starting Node
      * @param to index of ending Node
      *
@@ -126,7 +183,14 @@ class Section : public detail::HasMetadata {
      * direction
      */
     [[nodiscard]] bool canTraverse(SlotId from, SlotId to) const {
-        return (from == 0 && to == 1) || (isBidir() && from == 1 && to == 0);
+        switch (m_dir) {
+        case AllowedTravel::NONE:
+            return false;
+        case AllowedTravel::UNIDIR:
+            return from == 0 && to == 1;
+        case AllowedTravel::BIDIR:
+            return (from == 0 && to == 1) || (from == 1 && to == 0);
+        }
     }
 
     /**

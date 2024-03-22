@@ -159,9 +159,9 @@ TEST(Nodes, SlotOf) {
     Model model;
     model.newNode(CROSSING, "n1");
     model.newNode(CROSSING, "n2");
-    model.newSection("s1", false);
-    model.newSection("s2", false);
-    model.newSection("s3", false);
+    model.newSection("s1");
+    model.newSection("s2");
+    model.newSection("s3");
     model.link("s1", "n1", 0, "n2", 3);
     model.link("s2", "n1", 1, "n2", 2);
 

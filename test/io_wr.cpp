@@ -37,7 +37,7 @@ void modelsMustBeEqual(const Model &a, const Model &b) {
         EXPECT_EQ(as.start(), bs->start());
         EXPECT_EQ(as.end(), bs->end());
 
-        EXPECT_EQ(as.isBidir(), bs->isBidir());
+        EXPECT_EQ(as.dir(), bs->dir());
         EXPECT_EQ(as.length(), bs->length());
 
         EXPECT_EQ(as.isDestination(), bs->isDestination());
@@ -67,7 +67,7 @@ TEST(IoWriteRead, Basic) {
     Model model;
     model.newNode(THRU, "n1");
     model.newNode(THRU, "n2");
-    model.newSection("s1", false);
+    model.newSection("s1");
     writeReadCheck(model);
 }
 
@@ -80,7 +80,7 @@ TEST(IoWriteRead, BasicWithLink) {
     Model model;
     model.newNode(THRU, "n1");
     model.newNode(THRU, "n2");
-    model.newSection("s1", false);
+    model.newSection("s1");
     model.link("s1", "n1", 0, "n2", 1);
     writeReadCheck(model);
 }
@@ -98,7 +98,7 @@ TEST(IoWriteRead, Maximal) {
     model.node("n5")->metadata("n5-key1") = "apple";
     model.node("n5")->metadata("n5-key2") = "orange";
 
-    model.newSection("s1", true, 42,
+    model.newSection("s1", Section::AllowedTravel::BIDIR, 42,
                      std::make_unique<Destination>("1.0.1", "My Name"));
 
     model.section("s1")->metadata("s1-key1") = "grape";

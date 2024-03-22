@@ -79,9 +79,19 @@ void writeSection(minijson::object_writer &pw, const Section &section,
 
     writeLink(w, section, model);
 
-    if (section.isBidir()) {
-        w.write("bidir", true);
+    const char *dirName{};
+    switch (section.dir()) {
+    case Section::AllowedTravel::NONE:
+        dirName = "NONE";
+        break;
+    case Section::AllowedTravel::UNIDIR:
+        dirName = "UNIDIR";
+        break;
+    case Section::AllowedTravel::BIDIR:
+        dirName = "BIDIR";
+        break;
     }
+    w.write("dir", dirName);
 
     if (section.length() > 0) {
         w.write("length", section.length());

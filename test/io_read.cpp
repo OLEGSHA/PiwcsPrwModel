@@ -134,7 +134,7 @@ TEST(IoRead, Maximal) {
                     "endSlot": 1
                 },
                 "length": 123,
-                "bidir": true,
+                "dir": "BIDIR",
                 "dest": {
                     "address": "1.0.1",
                     "name": "My Destination",
