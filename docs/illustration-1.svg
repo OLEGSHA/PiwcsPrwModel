@@ -179,10 +179,10 @@
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="1"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.5444"
-     inkscape:cx="232.45273"
+     inkscape:cx="233.10023"
      inkscape:cy="169.64517"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -219,6 +219,13 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke-width:6;paint-order:stroke fill markers"
+       id="rect1820"
+       width="512"
+       height="352"
+       x="0"
+       y="0" />
     <circle
        style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:3;stroke-dasharray:none;stroke-opacity:1"
        id="path233"
@@ -334,7 +341,7 @@
          sodipodi:role="line"
          id="tspan2230"
          x="88.821053"
-         y="136.27338"></tspan></text>
+         y="136.27338" /></text>
     <text
        xml:space="preserve"
        style="font-size:16px;line-height:1.5;font-family:'Noto Sans Mono';-inkscape-font-specification:'Noto Sans Mono';word-spacing:0px"
