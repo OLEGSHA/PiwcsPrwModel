@@ -35,9 +35,11 @@ TEST(SwitchNode, Constructor) {
     Node node1(MOTORIZED, "123");
     Node node2(PASSIVE, "123");
     Node node3(FIXED, "123");
+    Node node4(MANUAL, "123");
     (void)node1;
     (void)node2;
     (void)node3;
+    (void)node4;
 }
 
 TEST(SwitchNode, MotorizedAllowedRoutes) {
@@ -114,6 +116,32 @@ TEST(SwitchNode, FixedAllowedRoutes) {
     }
     EXPECT_FALSE(node.couldTraverse(1, 0));
     EXPECT_FALSE(node.couldTraverse(0, 2));
+    EXPECT_FALSE(node.couldTraverse(1, 2));
+    EXPECT_FALSE(node.couldTraverse(2, 1));
+}
+
+TEST(SwitchNode, ManualAllowedRoutes) {
+    Node node(MANUAL, "123");
+    size_t max = node.sectionCount();
+
+    // Invalid inputs
+    EXPECT_FALSE(node.couldTraverse(0, max));
+    EXPECT_FALSE(node.couldTraverse(max, 0));
+    EXPECT_FALSE(node.couldTraverse(max + 1, max));
+    EXPECT_FALSE(node.couldTraverse(0, 127));
+    EXPECT_FALSE(node.couldTraverse(127, 0));
+    EXPECT_FALSE(node.couldTraverse(127, 126));
+
+    // Valid routes
+    EXPECT_TRUE(node.couldTraverse(0, 1));
+    EXPECT_TRUE(node.couldTraverse(1, 0));
+
+    // Invalid routes
+    for (size_t i = 0; i < max; i++) {
+        EXPECT_FALSE(node.couldTraverse(i, i));
+    }
+    EXPECT_FALSE(node.couldTraverse(0, 2));
+    EXPECT_FALSE(node.couldTraverse(2, 0));
     EXPECT_FALSE(node.couldTraverse(1, 2));
     EXPECT_FALSE(node.couldTraverse(2, 1));
 }

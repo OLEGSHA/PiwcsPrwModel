@@ -50,6 +50,7 @@ void parseNodeType(NodeData &nd, value v) {
              MOTORIZED,
              PASSIVE,
              FIXED,
+             MANUAL,
              CROSSING,
              END,
          }) {

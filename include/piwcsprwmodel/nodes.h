@@ -90,9 +90,20 @@ extern const NodeType PASSIVE;
 
 /**
  * A switch that is fixed in a single position that can be entered from
- * the common track.
+ * the common track or the diverging track.
+ *
+ * These nodes are typically found at the edges of bidirectional regions.
  */
 extern const NodeType FIXED;
+
+/**
+ * A switch that is fixed in a single position such that for the purposes of
+ * routed trains it is a straight section of track connecting common track and
+ * straight track.
+ *
+ * These nodes are typically found at the edges of forbidden regions.
+ */
+extern const NodeType MANUAL;
 
 /**
  * A level crossing of two tracks.

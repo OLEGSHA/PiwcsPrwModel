@@ -76,6 +76,17 @@ static constexpr NodeTypeInfo FIXED_INFO {
 };
 extern const NodeType FIXED = &FIXED_INFO;
 
+static constexpr NodeTypeInfo MANUAL_INFO {
+    "MANUAL", 3,
+    {
+        // 0 -> 1, 1 -> 0
+        { false, true,  false, },
+        { true,  false, false, },
+        { false, false, false, },
+    }
+};
+extern const NodeType MANUAL = &MANUAL_INFO;
+
 static constexpr NodeTypeInfo CROSSING_INFO {
     "CROSSING", 4,
     {

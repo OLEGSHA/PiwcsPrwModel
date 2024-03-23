@@ -92,8 +92,9 @@ TEST(IoWriteRead, Maximal) {
     model.newNode(MOTORIZED, "n2");
     model.newNode(PASSIVE, "n3");
     model.newNode(FIXED, "n4");
-    model.newNode(CROSSING, "n5");
-    model.newNode(END, "n6");
+    model.newNode(MANUAL, "n5");
+    model.newNode(CROSSING, "n6");
+    model.newNode(END, "n7");
 
     model.node("n5")->metadata("n5-key1") = "apple";
     model.node("n5")->metadata("n5-key2") = "orange";
