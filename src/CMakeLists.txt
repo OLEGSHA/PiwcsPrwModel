@@ -1,4 +1,4 @@
-add_library(piwcsprwmodel
+target_sources(piwcsprwmodel PRIVATE
     model.cpp
     nodes.cpp
     section.cpp

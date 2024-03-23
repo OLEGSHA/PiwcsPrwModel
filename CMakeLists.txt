@@ -5,6 +5,8 @@ project(piwcsprwmodel VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_library(piwcsprwmodel)
+
 # Setup clang-tidy if available
 find_program(clang_tidy_EXECUTABLE NAMES clang-tidy-13 clang-tidy)
 if(clang_tidy_EXECUTABLE)

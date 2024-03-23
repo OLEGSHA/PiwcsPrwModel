@@ -3,7 +3,7 @@ find_package(GTest)
 if(GTest_FOUND)
     enable_testing()
 
-    add_executable(tests
+    add_executable(tests EXCLUDE_FROM_ALL
         model.cpp
         nodes.cpp
         section.cpp
