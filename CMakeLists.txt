@@ -19,6 +19,8 @@ endif()
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
     set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
+    set(DOXYGEN_INCLUDE_GRAPH NO)
+    set(DOXYGEN_IMAGE_PATH docs)
     doxygen_add_docs(doxygen include)
 endif()
 
