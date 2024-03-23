@@ -29,4 +29,4 @@ endif()
 
 add_subdirectory(src)
 add_subdirectory(test)
-add_subdirectory(printer)
+add_subdirectory(examples)
