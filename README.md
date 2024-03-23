@@ -8,9 +8,13 @@ This project is licensed under GNU GPL version 3-or-later, see [LICENSE](LICENSE
 
 ## Usage
 
-### Dependencies
+### Prerequisites
 
 Only `cmake` and a C++ compiler are required to build the library. GCC and Clang are supported.
+
+### Libraries
+
+This project uses [minijson_reader](https://github.com/giacomodrago/minijson_reader) and [minijson_writer](https://github.com/giacomodrago/minijson_writer) (specifically, the [fork](https://github.com/ClausKlein/minijson_writer) by [ClausKlein](https://github.com/ClausKlein)) for JSON encoding and decoding.
 
 ### As a CMake subdirectory
 
