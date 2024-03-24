@@ -182,16 +182,7 @@ class Section : public detail::HasMetadata {
      * @return `true` if and only if travel is possible and allowed in given
      * direction
      */
-    [[nodiscard]] bool canTraverse(SlotId from, SlotId to) const {
-        switch (m_dir) {
-        case AllowedTravel::NONE:
-            return false;
-        case AllowedTravel::UNIDIR:
-            return from == 0 && to == 1;
-        case AllowedTravel::BIDIR:
-            return (from == 0 && to == 1) || (from == 1 && to == 0);
-        }
-    }
+    [[nodiscard]] bool canTraverse(SlotId from, SlotId to) const;
 
     /**
      * Returns the length of this section.
