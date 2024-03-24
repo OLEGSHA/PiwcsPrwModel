@@ -97,7 +97,6 @@ struct DestData : public MetadataData {
 struct SectionData : public MetadataData {
     Link link{};
     Section::AllowedTravel dir = Section::AllowedTravel::UNIDIR;
-    Section::Length length = 0;
     std::unique_ptr<Destination> dest{};
 };
 
@@ -130,7 +129,6 @@ void parseDest(SectionData &s, value, minijson::istream_context &ctx) {
 const minijson::dispatcher sectionDispatcher{
     optional_handler("link", parseLink),
     optional_handler("dir", into(&SectionData::dir)),
-    optional_handler("length", into(&SectionData::length)),
     optional_handler("dest", parseDest),
     optional_handler("metadata", parseMetadata),
 };
@@ -141,7 +139,7 @@ void parseSection(minijson::istream_context &ctx, Model &model,
 
     sectionDispatcher.run(ctx, data);
 
-    Section section(sectionId, data.dir, data.length, std::move(data.dest));
+    Section section(sectionId, data.dir, std::move(data.dest));
     installMetadata(section, data);
 
     if (!model.addSection(std::move(section))) {

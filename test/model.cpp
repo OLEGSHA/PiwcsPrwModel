@@ -95,17 +95,17 @@ TEST(Model, AddSectionWithDestination) {
     Model model;
 
     auto res =
-        model.newSection("123", Section::AllowedTravel::UNIDIR, 0,
+        model.newSection("123", Section::AllowedTravel::UNIDIR,
                          std::make_unique<Destination>("1.0.0", "Name1"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 1);
 
-    res = model.newSection("456", Section::AllowedTravel::UNIDIR, 0,
+    res = model.newSection("456", Section::AllowedTravel::UNIDIR,
                            std::make_unique<Destination>("1.0.1", "Name1"));
     EXPECT_EQ(res, Model::AddResult::OK);
     EXPECT_EQ(model.sections().size(), 2);
 
-    res = model.newSection("789", Section::AllowedTravel::UNIDIR, 0,
+    res = model.newSection("789", Section::AllowedTravel::UNIDIR,
                            std::make_unique<Destination>("1.0.1", "Name1"));
     EXPECT_EQ(res, Model::AddResult::DUPLICATE);
     EXPECT_EQ(model.sections().size(), 2);

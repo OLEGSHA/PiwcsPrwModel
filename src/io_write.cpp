@@ -93,10 +93,6 @@ void writeSection(minijson::object_writer &pw, const Section &section,
     }
     w.write("dir", dirName);
 
-    if (section.length() > 0) {
-        w.write("length", section.length());
-    }
-
     writeDestination(w, section);
     writeMetadata(w, section);
 }

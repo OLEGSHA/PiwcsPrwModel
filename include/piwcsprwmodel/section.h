@@ -30,11 +30,6 @@ class Section : public detail::HasMetadata {
 
   public:
     /**
-     * Type alias for Section length. This is a numeric type.
-     */
-    using Length = uint32_t;
-
-    /**
      * Allowed travel directions for routed trains.
      */
     enum class AllowedTravel {
@@ -61,32 +56,29 @@ class Section : public detail::HasMetadata {
     Identifier m_end;
     AllowedTravel m_dir;
 
-    Length m_length;
-
     std::unique_ptr<Destination> m_dest;
 
   public:
     /**
-     * Constructs a new Section with the given ID, directionality, length and,
+     * Constructs a new Section with the given ID, directionality, and,
      * optionally, destination data.
      *
      * @param id ID of the section
      * @param dir directionality of the section
-     * @param length length of the section
      * @param dest destination data for this section or `nullptr`
      */
-    Section(Identifier id, AllowedTravel dir, Length length,
+    Section(Identifier id, AllowedTravel dir,
             std::unique_ptr<Destination> dest);
 
     /**
      * Consturcts a new unidirectional Section with the given ID.
      *
-     * The length property of the new Section is 0. It is not a destination.
+     * The new Section is not a destination.
      *
      * @param id ID of the section
      */
     Section(Identifier id)
-        : Section(std::move(id), AllowedTravel::UNIDIR, 0, nullptr) {}
+        : Section(std::move(id), AllowedTravel::UNIDIR, nullptr) {}
 
     /**
      * Returns the Identifier of this Section.
@@ -183,16 +175,6 @@ class Section : public detail::HasMetadata {
      * direction
      */
     [[nodiscard]] bool canTraverse(SlotId from, SlotId to) const;
-
-    /**
-     * Returns the length of this section.
-     *
-     * Length can be zero exactly, meaning it is negligeable. Otherwise it
-     * should be significantly greater than zero.
-     *
-     * @return the length of this section
-     */
-    [[nodiscard]] Length length() const { return m_length; }
 
     /**
      * Returns `true` iff this Section has Destination data.

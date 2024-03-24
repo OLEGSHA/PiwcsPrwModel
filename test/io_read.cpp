@@ -56,7 +56,6 @@ TEST(IoRead, Basic) {
     auto *s1 = model.section("s1");
     ASSERT_NE(s1, nullptr);
     ASSERT_FALSE(s1->isBidir());
-    ASSERT_EQ(s1->length(), 0);
     ASSERT_FALSE(s1->isDestination());
 
     ASSERT_EQ(n1->section(0), ID_NULL);
@@ -95,7 +94,6 @@ TEST(IoRead, BasicWithLink) {
     auto *s1 = model.section("s1");
     ASSERT_NE(s1, nullptr);
     ASSERT_FALSE(s1->isBidir());
-    ASSERT_EQ(s1->length(), 0);
     ASSERT_FALSE(s1->isDestination());
 
     ASSERT_EQ(n1->section(0), "s1");
@@ -133,7 +131,6 @@ TEST(IoRead, Maximal) {
                     "endNode": "n2",
                     "endSlot": 1
                 },
-                "length": 123,
                 "dir": "BIDIR",
                 "dest": {
                     "address": "1.0.1",
@@ -167,7 +164,6 @@ TEST(IoRead, Maximal) {
     auto *s1 = model.section("s1");
     ASSERT_NE(s1, nullptr);
     ASSERT_TRUE(s1->isBidir());
-    ASSERT_EQ(s1->length(), 123);
     ASSERT_TRUE(s1->isDestination());
     ASSERT_EQ(s1->destination()->address(), "1.0.1");
     ASSERT_EQ(s1->destination()->name(), "My Destination");
