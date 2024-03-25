@@ -126,8 +126,7 @@ Model::LinkResult Model::link(IdRef sectionId, IdRef startNodeId,
         return LinkResult::NODE_OCCUPIED;
     }
 
-    // Check for section.end() is redundant
-    if (section->start() != ID_NULL) {
+    if (section->isConnected()) {
         return LinkResult::SECTION_OCCUPIED;
     }
 
@@ -149,8 +148,7 @@ Model::UnlinkResult Model::unlink(IdRef sectionId) {
         return UnlinkResult::NOT_FOUND;
     }
 
-    // Check for section.end() is redundant
-    if (section->start() == ID_NULL) {
+    if (!section->isConnected()) {
         return UnlinkResult::NOT_LINKED;
     }
 

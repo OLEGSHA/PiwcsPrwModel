@@ -163,6 +163,13 @@ class Section : public detail::HasMetadata {
     }
 
     /**
+     * Checks whether this section is connected to nodes.
+     *
+     * @return `true` if this section is connected to nodes
+     */
+    [[nodiscard]] bool isConnected() const { return m_start != ID_NULL; }
+
+    /**
      * Checks whether travel is allowed from Node in slot with index `from` to
      * Node in slot with index `to`.
      *

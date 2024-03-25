@@ -10,6 +10,7 @@ if(GTest_FOUND)
         metadata.cpp
         io_read.cpp
         io_wr.cpp
+        completeness.cpp
     )
 
     target_link_libraries(tests piwcsprwmodel)

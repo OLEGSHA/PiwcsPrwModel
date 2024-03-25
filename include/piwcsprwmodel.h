@@ -161,4 +161,6 @@
 
 #include "piwcsprwmodel/io.h"
 
+#include "piwcsprwmodel/algorithms.h"
+
 #endif // PIWCS_PRW_MODEL

@@ -37,8 +37,7 @@ void writeNodes(minijson::array_writer &pw, const Model &model) {
 
 void writeLink(minijson::object_writer &pw, const Section &section,
                const Model &model) {
-    if (section.start() == ID_NULL) {
-        _ASSERT(section.end() == ID_NULL, "start == null, end != null");
+    if (!section.isConnected()) {
         return;
     }
 
