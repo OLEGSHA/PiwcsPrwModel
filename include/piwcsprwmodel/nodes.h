@@ -51,10 +51,10 @@ struct NodeTypeInfo;
  * require no controller. For passive switches, straight track choice is
  * arbitrary.
  *
- * `FIXED` switches can only be entered from the common track, and will always
- * direct all trains to the same exit. They are found at the edges of
- * bidirectional segments. For fixed switches, straight track is the exit for
- * trains entering through common track.
+ * `FIXED` switches can be entered from the common track or the diverging track,
+ * and will always direct all trains to the same exit. They are found at the
+ * edges of bidirectional segments. For fixed switches, straight track is the
+ * exit for trains entering through common track.
  *
  * (All other switch configurations are invalid on the PRW.)
  *
