@@ -59,6 +59,7 @@
  * must be _complete_.
  *
  * ### Allowed Travel and Correctness
+ * @anchor allowed-travel-and-correctness
  *
  * Not all movement along sections is possible or allowed.
  *
