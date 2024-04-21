@@ -29,23 +29,23 @@ bool isComplete(const Model &model);
  *
  * To be correct, model must be complete and all allowed
  * (see @ref allowed-travel-and-correctness "Allowed Travel and Correctness" ) paths
- * must have no dead ends (i.e. places from which a train will have no valid path) or unreachable starting positions
+ * must have no dead ends (i.e. places from which a train has no valid path) or unreachable starting positions
  * except for bidirectional end nodes.
  *
- * This means firstly, that all slots with _outward_ allowed travel must be connected to _inward_ slots and vice versa
- * and all _both_ allowed travel slots must connect to _both_ slots.
+ * This means firstly, that all slots with _outward_ allowed travel (except slots of sections that disallow routing traffic)
+ * must be connected to slots with _inward_ allowed travel and vice versa.
  * Secondly, nodes inside forbidden regions can not be considered as valid starting positions
  * and @ref piwcs::prw::MANUAL "MANUAL" switches do not allow trains to enter diverging track. Thus in a correct model
  * nodes that connect sections with @ref piwcs::prw::Section::AllowedTravel "NONE" allowed travel
- * must be either @ref piwcs::prw::MANUAL "MANUAL" switches with such section connected to diverging track only
- * or have sections with @ref piwcs::prw::Section::AllowedTravel "NONE"
- * allowed travel connected to every slot.
+ * must have sections with @ref piwcs::prw::Section::AllowedTravel "NONE"
+ * allowed travel connected to every slot or be @ref piwcs::prw::MANUAL "MANUAL" switches
+ * with such section connected to only to diverging track.
  *
  * @note
  * Allowed travel of a slot, be it section slot or node slot, is
- * - _outward_ iff a train must leave this section or node through this slot
- * - _inward_ iff a train must enter this section or node through this slot
- * - _both_ iff a train is able to both leave or enter this section or node through this slot
+ * - _outward_ if a train is able to leave this section or node through this slot
+ * - _inward_ if a train is able to enter this section or node through this slot
+ * A slot can have both _inward_ and _outward_ travel allowed
  *
  * @param model the Model to examine
  *

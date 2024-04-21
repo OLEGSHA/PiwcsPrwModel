@@ -58,8 +58,8 @@
  * one empty slot are called _incomplete_; an accurate description of the PRW
  * must be _complete_.
  *
- * ### Allowed Travel and Correctness
  * @anchor allowed-travel-and-correctness
+ * ### Allowed Travel and Correctness
  *
  * Not all movement along sections is possible or allowed.
  *
