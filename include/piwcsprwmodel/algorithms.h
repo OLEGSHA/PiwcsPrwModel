@@ -27,25 +27,21 @@ bool isComplete(const Model &model);
 /**
  * Checks the provided model for _correctness_.
  *
- * To be correct, model must be complete and all allowed
- * (see @ref allowed-travel-and-correctness "Allowed Travel and Correctness" ) paths
- * must have no dead ends (i.e. places from which a train has no valid path) or unreachable starting positions
- * except for bidirectional end nodes.
- *
- * This means firstly, that all slots with _outward_ allowed travel (except slots of sections that disallow routing traffic)
- * must be connected to slots with _inward_ allowed travel and vice versa.
- * Secondly, nodes inside forbidden regions can not be considered as valid starting positions
- * and @ref piwcs::prw::MANUAL "MANUAL" switches do not allow trains to enter diverging track. Thus in a correct model
- * nodes that connect sections with @ref piwcs::prw::Section::AllowedTravel "NONE" allowed travel
- * must have sections with @ref piwcs::prw::Section::AllowedTravel "NONE"
- * allowed travel connected to every slot or be @ref piwcs::prw::MANUAL "MANUAL" switches
- * with such section connected to only to diverging track.
+ * To be _correct_, model must be complete and all allowed
+ * (see @ref piwcsprwmodel-allowed-travel-and-correctness
+ * "Allowed Travel and Correctness" ) paths must have no dead ends (i.e. places
+ * from which a train has no valid path) or unreachable starting positions
+ * except for bidirectional end nodes. Thus, a model is _correct_ if it is
+ * complete and all nodes are _locally correct_ (see note below).
  *
  * @note
- * Allowed travel of a slot, be it section slot or node slot, is
- * - _outward_ if a train is able to leave this section or node through this slot
- * - _inward_ if a train is able to enter this section or node through this slot
- * A slot can have both _inward_ and _outward_ travel allowed
+ * A node is _locally correct_ if for every section allowing travel __into__
+ * node there is a valid path to some section (even the same one) allowing
+ * travel __from__ node except for bidirectional ends.
+ *
+ * @note
+ * Bidirectional end is correct if it is connected to forbidden or bidirectional
+ * section.
  *
  * @param model the Model to examine
  *
