@@ -11,6 +11,7 @@ if(GTest_FOUND)
         io_read.cpp
         io_wr.cpp
         completeness.cpp
+		correctness.cpp
     )
 
     target_link_libraries(tests piwcsprwmodel)
