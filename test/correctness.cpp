@@ -1,4 +1,3 @@
-#include<exception>
 #include <gtest/gtest.h>
 
 #include <piwcsprwmodel.h>
