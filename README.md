@@ -67,6 +67,11 @@ Install [GoogleTest](https://google.github.io/googletest/), reconfigure the proj
 
 Install [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) version 13 or later and reconfigure the project. All targets will now run clang-tidy checks on all compiled files.
 
+Use CMake option `SKIP_CLANG_TIDY` when configuring to disable automatic linting:
+```bash
+cmake -B build -DSKIP_CLANG_TIDY=ON ...
+```
+
 ### Formatting
 
 This project uses [clang-format](https://clang.llvm.org/docs/ClangFormat.html) version 13 or later for formatting. Many IDEs support `.clang-format` formatting specification out of the box.
