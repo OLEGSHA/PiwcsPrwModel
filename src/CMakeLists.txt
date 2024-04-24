@@ -5,6 +5,7 @@ target_sources(piwcsprwmodel PRIVATE
     metadata.cpp
     util.cpp
     algorithms.cpp
+    correctness.cpp
     printing.cpp
     io_read.cpp
     io_write.cpp
