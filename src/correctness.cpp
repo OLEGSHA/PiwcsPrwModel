@@ -1,4 +1,4 @@
-#include <vector>
+#include <array>
 
 #include <piwcsprwmodel/algorithms.h>
 
@@ -9,9 +9,10 @@ namespace piwcs::prw {
 bool isLocallyCorrect(const Model& model, IdRef id){
 	const Node* node = model.node(id);
 
-	auto isInward = std::vector<bool>(Node::MAX_SLOTS, false);
-	auto isOutward = std::vector<bool>(Node::MAX_SLOTS, false);
-
+	std::array<bool, Node::MAX_SLOTS> isInward;
+	std::array<bool, Node::MAX_SLOTS> isOutward;
+	isInward.fill(false);
+	isOutward.fill(false);
 
 	if (node->type()==END) {
 		// Single slot of end must be connected to bidir. section or forbidden section
