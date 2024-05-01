@@ -101,8 +101,46 @@
  * The convention for metadata key names is `snake_case`. Should namespaces be
  * required, they should be separated with dots: `my_namespace.subgroup.my_key`.
  *
+ * The keys and values are valid Unicode strings encoded as UTF-8 strings. Keys
+ * are no longer than 255 bytes. Note that the model does not check or enforce
+ * these rules.
+ *
  * This implementation preserves and exposes all metadata entries and does not
  * interpret any of them.
+ *
+ * #### Well-known metadata keys
+ * These keys, if present, should have the following meaning and format:
+ *
+ * - `cluster`
+ *
+ *   Applies to Nodes. Format: `[a-z_]+(\.[a-z_]+)*`, max 255 UTF-8 bytes.
+ *
+ *   ID of the innermost cluster the node belongs to. If missing, assume not
+ *   part of any cluster.
+ *
+ *   @note
+ *   Models may be recursively partially partitioned into clusters by physical
+ *   proximity and semantics. Clusters may be used to speed up routing, or to
+ *   hide details on maps. For example, cluster `bell_station` may include all
+ *   nodes that form a hypothetical Bell Station, while cluster
+ *   `bell_station.north` may include all Bell Station nodes that form its
+ *   northern intersection.
+ *
+ * - `maintainer`
+ *
+ *   Applies to all Model entities. Format: any string, max 255 UTF-8 bytes.
+ *
+ *   In-game name of the person or collective responsible for the functioning of
+ *   the entity. If missing, assume unmaintained.
+ *
+ * - `track_type`
+ *
+ *   Applies to Sections.
+ *   Format: `electrified` | `highspeed` | (future value, max 255 UTF-8 bytes).
+ *
+ *   Name of schema used to place track blocks. For example, `powered_3_8` may,
+ *   in the future, mean "8 vanilla rails followed by 3 vanilla powered rails,
+ *   repeated." If missing, assume `electrified`.
  *
  * ## Illustrated Example
  *
