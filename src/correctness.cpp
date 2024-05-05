@@ -23,16 +23,19 @@ bool isLocallyCorrect(const Model& model, IdRef id){
 		// Set outward/inward flags
 		for(SlotId start = 0; start < node->sectionCount(); ++start){
 			for(SlotId end = 0; end < node->sectionCount(); ++end){
-				if(
-					node->couldTraverse(start, end) &&
-					(
-						model.section(node->section(start))->isBidir() ||
-						(
-							model.section(node->section(start))->isUnidir() &&
-							model.section(node->section(start))->end() == id
-						)
-					)
-				){
+
+			    bool isTraversable =
+			            node->couldTraverse(start, end);
+			    bool isBidirectional =
+			            model.section(node->section(start))->isBidir();
+			    bool isUnidirectional =
+			            model.section(node->section(start))->isUnidir();
+			    bool isSectionEnd =
+			            model.section(node->section(start))->end() == id;
+
+				if(isTraversable &&
+				        (isBidirectional || (isUnidirectional && isSectionEnd))
+				        ){
 					isInward[start] = true;
 					isOutward[end] = true;
 				} // if
