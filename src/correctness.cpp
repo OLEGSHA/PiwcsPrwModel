@@ -14,9 +14,13 @@ bool isLocallyCorrect(const Model& model, IdRef id){
 	isInward.fill(false);
 	isOutward.fill(false);
 
+	auto sectionAt = [&](SlotId slot) -> const Section*{
+	    return model.section(node->section(slot));
+	};
+
 	if (node->type()==END) {
 		// Single slot of end must be connected to bidir. section or forbidden section
-		return model.section(node->section(0))->dir()!=Section::AllowedTravel::UNIDIR;
+		return sectionAt(0)->dir()!=Section::AllowedTravel::UNIDIR;
 	}
 
 	else{
@@ -27,11 +31,11 @@ bool isLocallyCorrect(const Model& model, IdRef id){
 			    bool isTraversable =
 			            node->couldTraverse(start, end);
 			    bool isBidirectional =
-			            model.section(node->section(start))->isBidir();
+			            sectionAt(start)->isBidir();
 			    bool isUnidirectional =
-			            model.section(node->section(start))->isUnidir();
+			            sectionAt(start)->isUnidir();
 			    bool isSectionEnd =
-			            model.section(node->section(start))->end() == id;
+			            sectionAt(start)->end() == id;
 
 				if(isTraversable &&
 				        (isBidirectional || (isUnidirectional && isSectionEnd))
@@ -44,7 +48,7 @@ bool isLocallyCorrect(const Model& model, IdRef id){
 
 		// Check slot correctness
 		for(SlotId slot = 0; slot < node->sectionCount(); ++slot){
-			const Section* section = model.section(node->section(slot));
+			const Section* section = sectionAt(slot);
 
 			// Bidirectional slot
 			if(isInward[slot] && isOutward[slot]){
@@ -55,7 +59,7 @@ bool isLocallyCorrect(const Model& model, IdRef id){
 			}
 
 			// None slot
-			if(!(isInward[slot]) && !(isOutward[slot])) {
+			if(!(isInward[slot] || isOutward[slot])) {
 				if(section->allowsTravel()){
 					return false;
 				}
@@ -67,19 +71,21 @@ bool isLocallyCorrect(const Model& model, IdRef id){
 				return false;
 			}
 
-			if(
-				isInward[slot] &&
-				section->end() != id
-				){
-				return false;
+			bool isUnidirectional = section->isUnidir();
+			bool isEnd = section->end() == id;
+
+			if(!isUnidirectional){
+			    return false;
 			}
 
-			if(
-				isOutward[slot] &&
-				section->start() != id
-				){
-				return false;
+			if(isInward[slot] && !isEnd){
+			    return false;
 			}
+
+			if(isOutward[slot] && isEnd){
+                return false;
+            }
+
 		} // for slot
 
 		// Reset outward/inward flags
