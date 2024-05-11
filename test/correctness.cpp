@@ -5,6 +5,7 @@
 #include <piwcsprwmodel.h>
 
 #include "../src/correctness.h"
+#include "../src/debug.h"
 #include "../src/nodetypeinfo.h"
 
 using namespace piwcs::prw;
@@ -20,8 +21,8 @@ template <std::size_t N>
 bool localCorrectnessMinimal(NodeType type,
                              const SectionTestInfo (&sections)[N]) {
 
-    assert(N >= (type->slotCount) &&
-           "Invalid section array provided, slot counts don't match!");
+    _ASSERT(N >= (type->slotCount),
+            "Invalid section array provided, slot counts don't match!");
 
     Model model;
     model.newNode(type, "n0");
