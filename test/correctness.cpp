@@ -56,8 +56,6 @@ bool localCorrectnessMinimal(NodeType type,
         ASSERT_EQ(res, true);                                                  \
     }
 
-// << "Expected correct node of type `" << #nodeType << "`";
-
 std::vector<NodeType> types = {END,   THRU,    CROSSING, MOTORIZED,
                                FIXED, PASSIVE, MANUAL};
 
