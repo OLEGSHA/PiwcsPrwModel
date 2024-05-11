@@ -5,7 +5,7 @@
 
 namespace piwcs::prw {
 
-bool isLocallyCorrect(const Model& model, IdRef id);
+bool isLocallyCorrect(const Model &model, IdRef id);
 
 } // namespace piwcs::prw
 
