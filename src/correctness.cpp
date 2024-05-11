@@ -91,12 +91,6 @@ bool isLocallyCorrect(const Model &model, IdRef id) {
 
             } // for slot
 
-            // Reset outward/inward flags
-            for (SlotId slot = 0; slot < node->sectionCount(); ++slot) {
-                isInward[slot] = false;
-                isOutward[slot] = false;
-            }
-
         } // else
     } catch (const EmptySlotError &err) {
         return false;
