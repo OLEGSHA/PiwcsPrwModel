@@ -60,6 +60,12 @@ bool localCorrectnessMinimal(NodeType type,
 std::vector<NodeType> types = {END,   THRU,    CROSSING, MOTORIZED,
                                FIXED, PASSIVE, MANUAL};
 
+TEST(LocalCorrectness, NodeWithEmptySlot_IsIncorrect) {
+    Model model;
+    model.newNode(END, "n0");
+    ASSERT_FALSE(isLocallyCorrect(model, "n0"));
+}
+
 TEST(LocalCorrectness, AnyCompletelyForbidden_IsCorrect) {
 
     SectionTestInfo sections[Node::MAX_SLOTS];
