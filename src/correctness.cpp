@@ -83,22 +83,27 @@ bool isLocallyCorrect(const Model &model, IdRef id) {
                 continue;
             }
 
-            // Unidirectional slot
-            if (!section->isUnidir()) {
-                return false;
-            }
-
             bool isUnidirectional = section->isUnidir();
             bool isEnd = section->end() == id;
 
+            /*
+             * All previous conditionals were not triggered, so this slot is
+             * unidirectional
+             */
             if (!isUnidirectional) {
                 return false;
             }
 
+            /*
+             * If slot is inward, the section must lead to it
+             */
             if (isInward[slot] && !isEnd) {
                 return false;
             }
 
+            /*
+             * If slot is outward, the section must lead from it
+             */
             if (isOutward[slot] && isEnd) {
                 return false;
             }
