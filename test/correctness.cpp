@@ -56,6 +56,14 @@ bool localCorrectnessMinimal(NodeType type,
         ASSERT_EQ(res, true);                                                  \
     }
 
+TEST(LocalCorrectness, InvalidNode_IsIncorrect){
+    Model model;
+    for(Identifier id : {ID_NULL, ID_INVALID, static_cast<Identifier>("n0")}){
+
+    EXPECT_FALSE(isLocallyCorrect(model, id))<< "Invalid id not detected: `" << (id==ID_NULL ? static_cast<Identifier>("#null") : id) << '`';
+    };
+}
+
 TEST(LocalCorrectness, NodeWithEmptySlot_IsIncorrect) {
     Model model;
     model.newNode(END, "n0");
