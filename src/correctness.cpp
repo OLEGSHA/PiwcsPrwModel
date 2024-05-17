@@ -9,6 +9,10 @@ namespace piwcs::prw {
 
 bool isLocallyCorrect(const Model &model, IdRef id) {
     const Node *node = model.node(id);
+    if(!node){
+        // Node not found
+        return false;
+    }
 
     std::array<bool, Node::MAX_SLOTS> isInward;
     std::array<bool, Node::MAX_SLOTS> isOutward;
