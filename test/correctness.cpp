@@ -1,6 +1,6 @@
+#include <array>
 #include <format>
 #include <gtest/gtest.h>
-#include <vector>
 
 #include <piwcsprwmodel.h>
 
@@ -56,9 +56,6 @@ bool localCorrectnessMinimal(NodeType type,
         ASSERT_EQ(res, true);                                                  \
     }
 
-std::vector<NodeType> types = {END,   THRU,    CROSSING, MOTORIZED,
-                               FIXED, PASSIVE, MANUAL};
-
 TEST(LocalCorrectness, NodeWithEmptySlot_IsIncorrect) {
     Model model;
     model.newNode(END, "n0");
@@ -73,7 +70,15 @@ TEST(LocalCorrectness, AnyCompletelyForbidden_IsCorrect) {
         sections[slot] = {SType::NONE};
     }
 
-    for (NodeType type : types) {
+    for (const auto *type : {
+             THRU,
+             MOTORIZED,
+             PASSIVE,
+             FIXED,
+             MANUAL,
+             CROSSING,
+             END,
+         }) {
 
         bool res = localCorrectnessMinimal(type, sections);
         ASSERT_TRUE(res) << "Expected correct node of type `" << type->name
