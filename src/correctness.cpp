@@ -3,6 +3,7 @@
 #include <piwcsprwmodel/algorithms.h>
 
 #include "correctness.h"
+#include "debug.h"
 
 namespace piwcs::prw {
 
@@ -14,14 +15,30 @@ bool isLocallyCorrect(const Model &model, IdRef id) {
     isInward.fill(false);
     isOutward.fill(false);
 
-    auto sectionAt = [&](SlotId slot) -> const Section * {
-        return model.section(node->section(slot));
-    };
+    std::array<const Section *, Node::MAX_SLOTS> sections;
+    sections.fill(nullptr);
+
+    for (SlotId slot = 0; slot < node->sectionCount(); ++slot) {
+        IdRef sectionId = node->section(slot);
+        _ASSERT(sectionId != ID_INVALID, "invalid slot index");
+
+        sections[slot] = model.section(sectionId);
+
+        /*
+         * If section pointer is nullptr then id of Section in slot is not
+         * valid. Model is incomplete and node locally incorrect
+         */
+        if (!sections[slot]) {
+            return false;
+        }
+    }
 
     if (node->type() == END) {
-        // Single slot of end must be connected to bidir. section or forbidden
-        // section
-        return sectionAt(0)->dir() != Section::AllowedTravel::UNIDIR;
+        /*
+         * Single slot of end must be connected to bidir. section or
+         * forbidden section
+         */
+        return sections.at(0)->dir() != Section::AllowedTravel::UNIDIR;
     }
 
     else {
@@ -30,9 +47,9 @@ bool isLocallyCorrect(const Model &model, IdRef id) {
             for (SlotId end = 0; end < node->sectionCount(); ++end) {
 
                 bool isTraversable = node->couldTraverse(start, end);
-                bool isBidirectional = sectionAt(start)->isBidir();
-                bool isUnidirectional = sectionAt(start)->isUnidir();
-                bool isSectionEnd = sectionAt(start)->end() == id;
+                bool isBidirectional = sections.at(start)->isBidir();
+                bool isUnidirectional = sections.at(start)->isUnidir();
+                bool isSectionEnd = sections.at(start)->end() == id;
 
                 if (isTraversable &&
                     (isBidirectional || (isUnidirectional && isSectionEnd))) {
@@ -44,7 +61,7 @@ bool isLocallyCorrect(const Model &model, IdRef id) {
 
         // Check slot correctness
         for (SlotId slot = 0; slot < node->sectionCount(); ++slot) {
-            const Section *section = sectionAt(slot);
+            const Section *section = sections.at(slot);
 
             // Bidirectional slot
             if (isInward[slot] && isOutward[slot]) {
