@@ -2,7 +2,6 @@
 
 #include <piwcsprwmodel/algorithms.h>
 
-#include "correctness.h"
 #include "debug.h"
 
 namespace piwcs::prw {

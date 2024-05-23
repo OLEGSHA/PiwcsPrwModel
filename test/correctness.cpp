@@ -4,7 +4,6 @@
 
 #include <piwcsprwmodel.h>
 
-#include "../src/correctness.h"
 #include "../src/debug.h"
 #include "../src/nodetypeinfo.h"
 
