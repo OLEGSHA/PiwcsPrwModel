@@ -95,106 +95,310 @@ TEST(LocalCorrectness, AnyCompletelyForbidden_IsCorrect) {
     }
 }
 
-CORRECT_TEST(Bidirectional, END, ({{SType::BIDIR}}));
-
-INCORRECT_TEST(Unidirectional1, END, ({{SType::UNIDIR, true}}));
-
-INCORRECT_TEST(Unidirectional2, END, ({{SType::UNIDIR, false}}));
-
-CORRECT_TEST(Bidirectional, THRU, ({{SType::BIDIR}, {SType::BIDIR}}));
-
-CORRECT_TEST(Unidirectional, THRU,
-             ({{SType::UNIDIR, true}, {SType::UNIDIR, false}}));
-
-INCORRECT_TEST(Unmatching_BIDIR_UNIDIR, THRU,
-               ({{SType::UNIDIR}, {SType::BIDIR}}));
-
-INCORRECT_TEST(Unmatching_UNIDIR_NONE, THRU, ({{SType::BIDIR}, {SType::NONE}}));
-
-CORRECT_TEST(, MOTORIZED,
-             ({{SType::UNIDIR, true}, {SType::UNIDIR}, {SType::UNIDIR}}));
-
-INCORRECT_TEST(MismatchCommon, MOTORIZED,
-               ({{SType::UNIDIR, false}, {SType::UNIDIR}, {SType::UNIDIR}}));
+// clang-format off: macro parameter list readability
+CORRECT_TEST(
+    Bidirectional,
+    END,
+    ({
+        {SType::BIDIR}
+    })
+);
 
 INCORRECT_TEST(
-    MismatchStraight, MOTORIZED,
-    ({{SType::UNIDIR, true}, {SType::UNIDIR, true}, {SType::UNIDIR}}));
+    Unidirectional1,
+    END,
+    ({
+        {SType::UNIDIR, true}
+    })
+);
 
 INCORRECT_TEST(
-    MismatchDiverging, MOTORIZED,
-    ({{SType::UNIDIR, true}, {SType::UNIDIR}, {SType::UNIDIR, true}}));
+    Unidirectional2,
+    END,
+    ({
+        {SType::UNIDIR, false}
+    })
+);
+
+CORRECT_TEST(
+    Bidirectional,
+    THRU,
+    ({
+        {SType::BIDIR},
+        {SType::BIDIR}
+    })
+);
+
+CORRECT_TEST(
+    Unidirectional,
+    THRU,
+    ({
+        {SType::UNIDIR, true},
+        {SType::UNIDIR, false}
+    })
+);
+
+INCORRECT_TEST(
+    Unmatching_BIDIR_UNIDIR,
+    THRU,
+    ({
+        {SType::UNIDIR},
+        {SType::BIDIR}
+    })
+);
+
+INCORRECT_TEST(
+    Unmatching_UNIDIR_NONE,
+    THRU,
+    ({
+        {SType::BIDIR},
+        {SType::NONE}
+    })
+);
+
+CORRECT_TEST(
+    ,
+    MOTORIZED,
+    ({
+        {SType::UNIDIR, true},
+        {SType::UNIDIR},
+        {SType::UNIDIR}
+    })
+);
+
+INCORRECT_TEST(
+    MismatchCommon,
+    MOTORIZED,
+    ({
+        {SType::UNIDIR, false},
+        {SType::UNIDIR},
+        {SType::UNIDIR}
+    })
+);
+
+INCORRECT_TEST(
+    MismatchStraight,
+    MOTORIZED,
+    ({
+        {SType::UNIDIR, true},
+        {SType::UNIDIR, true},
+        {SType::UNIDIR}
+    })
+);
+
+INCORRECT_TEST(
+    MismatchDiverging,
+    MOTORIZED,
+    ({
+        {SType::UNIDIR, true},
+        {SType::UNIDIR},
+        {SType::UNIDIR, true}
+    })
+);
+// clang-format on
 
 /*
  * This situation would have been correct
  * if motorized node allowed straight -> common travel
  */
-INCORRECT_TEST(MismatchCommonAsBidirectional, MOTORIZED,
-               ({{SType::BIDIR}, {SType::BIDIR}, {SType::UNIDIR}}));
-
-CORRECT_TEST(, FIXED,
-             ({{SType::BIDIR}, {SType::UNIDIR}, {SType::UNIDIR, true}}));
-
+// clang-format off: macro parameter list readability
 INCORRECT_TEST(
-    MismatchCommon, FIXED,
-    ({{SType::BIDIR}, {SType::UNIDIR, true}, {SType::UNIDIR, true}}));
-
-INCORRECT_TEST(MismatchDiverging, FIXED,
-               ({{SType::BIDIR}, {SType::UNIDIR}, {SType::UNIDIR}}));
-
-CORRECT_TEST(ForbiddenDiverging, FIXED,
-             ({{SType::UNIDIR, true}, {SType::UNIDIR}, {SType::NONE}}));
-
-CORRECT_TEST(, MANUAL,
-             ({{SType::UNIDIR, true}, {SType::UNIDIR}, {SType::NONE}}));
-
-INCORRECT_TEST(AllowedDiverging, MANUAL,
-               ({{SType::UNIDIR, true}, {SType::UNIDIR}, {SType::UNIDIR}}));
-
-CORRECT_TEST(AllConnected, PASSIVE,
-             ({{SType::UNIDIR}, {SType::UNIDIR, true}, {SType::UNIDIR, true}}));
-
-CORRECT_TEST(StraightConnected, PASSIVE,
-             ({{SType::UNIDIR}, {SType::UNIDIR, true}, {SType::NONE}}));
-
-CORRECT_TEST(DivergingConnected, PASSIVE,
-             ({{SType::UNIDIR}, {SType::NONE}, {SType::UNIDIR, true}}));
-
-INCORRECT_TEST(CommonForbidden, PASSIVE,
-               ({{SType::NONE}, {SType::UNIDIR, true}, {SType::UNIDIR, true}}));
-
-INCORRECT_TEST(StraightAsBidirectional, PASSIVE,
-               ({{SType::BIDIR}, {SType::BIDIR}, {SType::UNIDIR, true}}));
+    MismatchCommonAsBidirectional,
+    MOTORIZED,
+    ({
+        {SType::BIDIR},
+        {SType::BIDIR},
+        {SType::UNIDIR}
+    })
+);
 
 CORRECT_TEST(
-    AllBidirectional, CROSSING,
-    ({{SType::BIDIR}, {SType::BIDIR}, {SType::BIDIR}, {SType::BIDIR}}));
+    ,
+    FIXED,
+    ({
+        {SType::BIDIR},
+        {SType::UNIDIR},
+        {SType::UNIDIR, true}
+    })
+);
+
+INCORRECT_TEST(
+    MismatchCommon,
+    FIXED,
+    ({
+        {SType::BIDIR},
+        {SType::UNIDIR, true},
+        {SType::UNIDIR, true}
+    })
+);
+
+INCORRECT_TEST(
+    MismatchDiverging,
+    FIXED,
+   ({
+        {SType::BIDIR},
+        {SType::UNIDIR},
+        {SType::UNIDIR}
+    })
+);
 
 CORRECT_TEST(
-    BidirectionalAndUnidirectional, CROSSING,
-    ({{SType::UNIDIR}, {SType::UNIDIR, true}, {SType::BIDIR}, {SType::BIDIR}}));
-
-CORRECT_TEST(AllUnidirectional, CROSSING,
-             ({{SType::UNIDIR},
-               {SType::UNIDIR, true},
-               {SType::UNIDIR},
-               {SType::UNIDIR, true}}));
+    ForbiddenDiverging,
+    FIXED,
+    ({
+        {SType::UNIDIR, true},
+        {SType::UNIDIR},
+        {SType::NONE}
+    })
+);
 
 CORRECT_TEST(
-    UnidirectionalAndForbidden, CROSSING,
-    ({{SType::UNIDIR}, {SType::UNIDIR, true}, {SType::NONE}, {SType::NONE}}));
+    ,
+    MANUAL,
+    ({
+        {SType::UNIDIR, true},
+        {SType::UNIDIR},
+        {SType::NONE}
+    })
+);
 
 INCORRECT_TEST(
-    BidirectionalMismatch, CROSSING,
-    ({{SType::BIDIR}, {SType::UNIDIR, true}, {SType::NONE}, {SType::NONE}}));
+    AllowedDiverging,
+    MANUAL,
+    ({
+        {SType::UNIDIR, true},
+        {SType::UNIDIR},
+        {SType::UNIDIR}
+    })
+);
+
+CORRECT_TEST(
+    AllConnected,
+    PASSIVE,
+    ({
+        {SType::UNIDIR},
+        {SType::UNIDIR, true},
+        {SType::UNIDIR, true}
+    })
+);
+
+CORRECT_TEST(
+    StraightConnected,
+    PASSIVE,
+    ({
+        {SType::UNIDIR},
+        {SType::UNIDIR, true},
+        {SType::NONE}
+    })
+);
+
+CORRECT_TEST(
+    DivergingConnected,
+    PASSIVE,
+    ({
+        {SType::UNIDIR},
+        {SType::NONE},
+        {SType::UNIDIR, true}
+    })
+);
 
 INCORRECT_TEST(
-    UnidirectionalMismatch, CROSSING,
-    ({{SType::UNIDIR}, {SType::UNIDIR}, {SType::NONE}, {SType::NONE}}));
+    CommonForbidden,
+    PASSIVE,
+    ({
+        {SType::NONE},
+        {SType::UNIDIR, true},
+        {SType::UNIDIR, true}
+    })
+);
 
 INCORRECT_TEST(
-    ForbiddenMismatch, CROSSING,
-    ({{SType::UNIDIR}, {SType::NONE}, {SType::NONE}, {SType::NONE}}));
+    StraightAsBidirectional,
+    PASSIVE,
+    ({
+        {SType::BIDIR},
+        {SType::BIDIR},
+        {SType::UNIDIR, true}
+    })
+);
+
+CORRECT_TEST(
+    AllBidirectional,
+    CROSSING,
+    ({
+        {SType::BIDIR},
+        {SType::BIDIR},
+        {SType::BIDIR},
+        {SType::BIDIR}
+    })
+);
+
+CORRECT_TEST(
+    BidirectionalAndUnidirectional,
+    CROSSING,
+    ({
+        {SType::UNIDIR},
+        {SType::UNIDIR, true},
+        {SType::BIDIR},
+        {SType::BIDIR}
+    })
+);
+
+CORRECT_TEST(
+    AllUnidirectional,
+    CROSSING,
+    ({
+        {SType::UNIDIR},
+        {SType::UNIDIR, true},
+        {SType::UNIDIR},
+        {SType::UNIDIR, true}
+    })
+);
+
+CORRECT_TEST(
+    UnidirectionalAndForbidden,
+    CROSSING,
+    ({
+        {SType::UNIDIR},
+        {SType::UNIDIR, true},
+        {SType::NONE},
+        {SType::NONE}
+    })
+);
+
+INCORRECT_TEST(
+    BidirectionalMismatch,
+    CROSSING,
+    ({
+        {SType::BIDIR},
+        {SType::UNIDIR, true},
+        {SType::NONE},
+        {SType::NONE}
+    })
+);
+
+INCORRECT_TEST(
+    UnidirectionalMismatch,
+    CROSSING,
+    ({
+        {SType::UNIDIR},
+        {SType::UNIDIR},
+        {SType::NONE},
+        {SType::NONE}
+    })
+);
+
+INCORRECT_TEST(
+    ForbiddenMismatch,
+    CROSSING,
+    ({
+        {SType::UNIDIR},
+        {SType::NONE},
+        {SType::NONE},
+        {SType::NONE}
+    })
+);
+// clang-format on
 
 TEST(Correctness, Basic) {
     Model model;
